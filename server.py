@@ -152,7 +152,7 @@ def gen_license():
         return jsonify({"error": "Missing duration"}), 400
     if not quantity:
         return jsonify({"error": "Missing quantity"}), 400
-    if duration not in ['Month', 'Week', 'Lifetime']:
+    if duration not in ['Month', 'Week', 'Lifetime','Day']:
         return jsonify({"error": "Invalid duration"}), 400
     
     try:
@@ -198,7 +198,7 @@ def assign_license():
         return jsonify({"error": "Missing app_name"}), 400
     if not duration:
         return jsonify({"error": "Missing duration"}), 400
-    if duration not in ['Month', 'Week', 'Lifetime']:
+    if duration not in ['Month', 'Week', 'Lifetime','Day']:
         return jsonify({"error": "Invalid duration"}), 400
 
     app_dir = os.path.join(db, app_name)
@@ -235,6 +235,8 @@ def assign_license():
         expiry_date = current_time + timedelta(days=30)
     elif duration == "Week":
         expiry_date = current_time + timedelta(days=7)
+    elif duration == "Day":
+        expiry_date = current_time + timedelta(hours=24)
     else:  # Lifetime
         expiry_date = "Lifetime"
 

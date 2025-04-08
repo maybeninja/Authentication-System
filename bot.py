@@ -146,7 +146,7 @@ async def create_app(ctx: discord.AppCommandContext, app_name: str, version: flo
 @commands.has_permissions(administrator=True)
 @commands.guild_only()
 
-async def generate_license(ctx: discord.AppCommandContext, app_name: str, duration: Literal['Lifetime', 'Month', 'Week'], quantity: int):
+async def generate_license(ctx: discord.AppCommandContext, app_name: str, duration: Literal['Lifetime', 'Month', 'Week','Day'], quantity: int):
     await ctx.interaction.response.defer(thinking=True, ephemeral=True) 
 
     data = {
@@ -322,7 +322,7 @@ from datetime import datetime, timedelta
 @bot.hybrid_command(name='assign_license', description='Assign License For App')
 @commands.has_permissions(administrator=True)
 @commands.guild_only()
-async def assign_license(ctx, app_name: str, duration: Literal['Lifetime', 'Month', 'Week']):
+async def assign_license(ctx, app_name: str, duration: Literal['Lifetime', 'Month', 'Week','Day']):
     await ctx.interaction.response.defer(thinking=True, ephemeral=True)   # Defer response for smoother interaction
 
     data = {
