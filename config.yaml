@@ -1,6 +1,5 @@
 Webhook:
- APILogs: https://discord.com/api/webhooks/1354847772746059938/UrSH8C7q9uzwyDjKlp872zAp4WEiNeoEzJV7yOe3yFEcx5rVfdBKROYEqCK0ZVRpKClU
-base_url: http://45.137.70.25:1337/Auth
-authtoken: AstaAuth1337
-token: 'MTM1Mzc4MDEwMjYzNDQwNTk2OA.GJUWQO.oYz_kPp9_j-_sovKB97HO3rNPWZlgjAOBaTHNs'
-port: 1337
+ APILogs: https://discord.com/api/webhooks/
+base_url: http://45
+authtoken: ''
+port: 1
