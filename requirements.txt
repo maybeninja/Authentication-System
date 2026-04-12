@@ -1,0 +1,6 @@
+flask>=3.0.0
+pyyaml>=6.0
+pytz>=2024.1
+tls-client>=0.2.2
+discord.py>=2.3.2
+aiohttp>=3.9.0
