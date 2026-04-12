@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Auth System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07070d;--s1:#0e0e18;--s2:#13131f;--s3:#1a1a2a;
+  --border:#252535;--border2:#2e2e45;
+  --a1:#e879f9;--a2:#22d3ee;--a3:#4ade80;--a4:#fb923c;
+  --danger:#f87171;--warn:#fbbf24;
+  --text:#f1f5f9;--sub:#94a3b8;--muted:#475569;
+  --mono:'DM Mono',monospace;--sans:'Bricolage Grotesque',sans-serif;--r:12px;
+}
+[data-theme="light"]{
+  --bg:#f0f2f8;--s1:#ffffff;--s2:#f7f8fc;--s3:#eef0f8;
+  --border:#dde1ef;--border2:#c8cde3;
+  --text:#0f172a;--sub:#475569;--muted:#94a3b8;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;transition:background .3s,color .3s}
+
+/* GATE */
+#gate{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.gate-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(232,121,249,.12) 0%,transparent 70%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(34,211,238,.08) 0%,transparent 60%)}
+.gate-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(232,121,249,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(232,121,249,.04) 1px,transparent 1px);background-size:48px 48px}
+.gate-card{position:relative;z-index:2;background:var(--s1);border:1px solid var(--border);border-radius:20px;padding:48px;width:100%;max-width:440px;box-shadow:0 0 80px rgba(232,121,249,.08);animation:slideUp .5s ease both}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.gate-logo{text-align:center;margin-bottom:36px}
+.gate-icon{width:56px;height:56px;border-radius:14px;margin:0 auto 14px;background:linear-gradient(135deg,var(--a1),var(--a2));display:flex;align-items:center;justify-content:center;font-size:24px}
+.gate-logo h1{font-size:22px;font-weight:800;margin-bottom:4px}
+.gate-logo p{font-size:13px;color:var(--sub);font-family:var(--mono)}
+.portal-tabs{display:flex;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:28px;gap:4px}
+.ptab{flex:1;padding:9px;border-radius:7px;border:none;background:none;font-family:var(--sans);font-size:13px;font-weight:600;color:var(--sub);cursor:pointer;transition:all .15s}
+.ptab.active{background:var(--s1);color:var(--text);box-shadow:0 1px 6px rgba(0,0,0,.25)}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--sub);margin-bottom:7px;font-family:var(--mono)}
+.field input{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:12px 16px;font-size:14px;font-family:var(--mono);color:var(--text);outline:none;transition:border-color .15s,box-shadow .15s}
+.field input:focus{border-color:var(--a1);box-shadow:0 0 0 3px rgba(232,121,249,.1)}
+.field input::placeholder{color:var(--muted)}
+.gate-btn{width:100%;padding:13px;border-radius:10px;border:none;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.gate-btn-a{background:linear-gradient(135deg,var(--a1),#c026d3);color:#fff}
+.gate-btn-a:hover{opacity:.88;transform:translateY(-1px);box-shadow:0 8px 24px rgba(232,121,249,.3)}
+.gate-btn-u{background:linear-gradient(135deg,var(--a2),#0891b2);color:#fff}
+.gate-btn-u:hover{opacity:.88;transform:translateY(-1px);box-shadow:0 8px 24px rgba(34,211,238,.25)}
+.gate-error{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);border-radius:9px;padding:12px 16px;font-size:13px;color:var(--danger);margin-top:14px;font-family:var(--mono);display:none}
+
+/* SHELL */
+#shell{display:none;min-height:100vh}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;background:var(--s1);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:50;transition:background .3s}
+.sb-logo{padding:24px 24px 20px;border-bottom:1px solid var(--border)}
+.sb-logo-row{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.sb-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--a1),var(--a2));display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.sb-logo h2{font-size:15px;font-weight:800}
+.sb-badge{display:inline-block;padding:2px 8px;border-radius:100px;font-size:10px;font-family:var(--mono);font-weight:500;border:1px solid var(--border2);color:var(--sub)}
+.sb-badge.admin{border-color:rgba(232,121,249,.4);color:var(--a1);background:rgba(232,121,249,.06)}
+.sb-badge.user{border-color:rgba(34,211,238,.4);color:var(--a2);background:rgba(34,211,238,.06)}
+nav{flex:1;padding:16px 0;overflow-y:auto}
+.nav-sec{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:12px 22px 6px;font-family:var(--mono)}
+.nav-item{display:flex;align-items:center;gap:11px;padding:10px 22px;font-size:13px;font-weight:600;color:var(--sub);cursor:pointer;border-left:2px solid transparent;transition:all .15s;user-select:none}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.nav-item.active{color:var(--a1);border-left-color:var(--a1);background:rgba(232,121,249,.05)}
+.nav-item.u-style.active{color:var(--a2);border-left-color:var(--a2);background:rgba(34,211,238,.05)}
+.nav-icon{font-size:15px;width:20px;text-align:center}
+.sb-footer{padding:16px 22px;border-top:1px solid var(--border)}
+.sb-info{font-size:11px;color:var(--muted);font-family:var(--mono);line-height:1.8}
+.sb-info span{color:var(--a1)}
+.main{margin-left:240px;padding:36px 44px;min-height:100vh}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px}
+.topbar h1{font-size:24px;font-weight:800}
+.topbar h1 em{font-style:normal;color:var(--a1)}
+.tr{display:flex;align-items:center;gap:10px}
+.theme-btn{width:36px;height:36px;border-radius:9px;border:1px solid var(--border);background:var(--s2);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.theme-btn:hover{border-color:var(--border2)}
+.logout-btn{padding:8px 16px;border-radius:9px;border:1px solid var(--border);background:var(--s2);font-family:var(--sans);font-size:12px;font-weight:700;color:var(--sub);cursor:pointer;transition:all .15s}
+.logout-btn:hover{color:var(--danger);border-color:rgba(248,113,113,.4)}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.stat{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;position:relative;overflow:hidden;transition:border-color .2s,transform .15s;animation:fadeSlide .4s ease both}
+.stat:hover{border-color:var(--border2);transform:translateY(-2px)}
+.stat-glow{position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;opacity:.07;filter:blur(20px)}
+.stat-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;font-family:var(--mono)}
+.stat-val{font-size:30px;font-weight:800;line-height:1}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:5px;font-family:var(--mono)}
+.c1{color:var(--a1)}.c2{color:var(--a2)}.c3{color:var(--a3)}.c4{color:var(--a4)}
+.g1{background:var(--a1)}.g2{background:var(--a2)}.g3{background:var(--a3)}.g4{background:var(--a4)}
+.stat:nth-child(1){animation-delay:.05s}.stat:nth-child(2){animation-delay:.1s}.stat:nth-child(3){animation-delay:.15s}.stat:nth-child(4){animation-delay:.2s}
+
+@keyframes fadeSlide{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px}
+.span2{grid-column:1/-1}
+
+/* PANELS */
+.panel{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;animation:fadeSlide .4s ease both}
+.ph{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.ph h3{font-size:13px;font-weight:700}
+.badge{font-size:10px;font-family:var(--mono);padding:3px 8px;border-radius:100px;border:1px solid var(--border);color:var(--muted)}
+.pb{padding:20px 22px}
+
+/* FORM */
+.fg{display:grid;gap:12px}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fi label{display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:6px;font-family:var(--mono)}
+.fi input,.fi select{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px 13px;font-size:13px;font-family:var(--mono);color:var(--text);outline:none;transition:border-color .15s}
+.fi input:focus,.fi select:focus{border-color:var(--a1)}
+[data-role="user"] .fi input:focus,[data-role="user"] .fi select:focus{border-color:var(--a2)}
+.fi select{cursor:pointer}
+
+/* BUTTONS */
+.ib{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 18px;border-radius:8px;border:none;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+.ib-p{background:linear-gradient(135deg,var(--a1),#c026d3);color:#fff}
+.ib-p:hover{opacity:.85;transform:translateY(-1px)}
+.ib-u{background:linear-gradient(135deg,var(--a2),#0891b2);color:#fff}
+.ib-u:hover{opacity:.85;transform:translateY(-1px)}
+.ib-d{background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.25)}
+.ib-d:hover{background:rgba(248,113,113,.2)}
+.ib-g{background:var(--s2);color:var(--sub);border:1px solid var(--border)}
+.ib-g:hover{color:var(--text);border-color:var(--border2)}
+.ib-f{width:100%;justify-content:center}
+
+/* RESPONSE */
+.rbox{margin-top:12px;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:13px;font-family:var(--mono);font-size:12px;line-height:1.65;max-height:200px;overflow-y:auto;white-space:pre-wrap;display:none}
+.rbox.show{display:block}
+.rbox.ok{border-color:rgba(74,222,128,.3);color:var(--a3)}
+.rbox.err{border-color:rgba(248,113,113,.3);color:var(--danger)}
+.rbox.info{border-color:rgba(34,211,238,.3);color:var(--a2)}
+
+/* TABLE */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{text-align:left;padding:9px 14px;font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-family:var(--mono);border-bottom:1px solid var(--border)}
+tbody td{padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.04);font-family:var(--mono)}
+[data-theme="light"] tbody td{border-bottom-color:rgba(0,0,0,.05)}
+tbody tr:last-child td{border-bottom:none}
+.pill{display:inline-block;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700}
+.pg{background:rgba(74,222,128,.12);color:var(--a3)}.pr{background:rgba(248,113,113,.12);color:var(--danger)}.pb2{background:rgba(34,211,238,.12);color:var(--a2)}.pp{background:rgba(232,121,249,.12);color:var(--a1)}.pw{background:rgba(251,191,36,.12);color:var(--warn)}
+
+/* COUNTDOWN */
+.timer-wrap{display:flex;gap:12px;margin:12px 0}
+.timer-block{flex:1;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:14px 8px;text-align:center}
+.timer-num{font-size:28px;font-weight:800;font-family:var(--mono);color:var(--a2);line-height:1}
+.timer-lbl{font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:4px;text-transform:uppercase;letter-spacing:.08em}
+
+/* CHART */
+.chart-wrap{position:relative;height:180px}
+
+/* USER LICENSE CARD */
+.lic-card{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.lic-row{display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.lic-key{font-family:var(--mono);font-size:12px;color:var(--a2);background:var(--s1);padding:8px 12px;border-radius:7px;border:1px solid var(--border);word-break:break-all}
+.progress-bar{height:6px;background:var(--s3);border-radius:3px;overflow:hidden;margin-top:4px}
+.progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--a3),var(--a2));transition:width 1s ease}
+
+/* AUDIT */
+.log-entry{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px}
+[data-theme="light"] .log-entry{border-bottom-color:rgba(0,0,0,.05)}
+.log-entry:last-child{border-bottom:none}
+.log-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.log-time{font-family:var(--mono);color:var(--muted);flex-shrink:0;width:75px}
+.log-msg{color:var(--sub);line-height:1.4}
+.log-msg strong{color:var(--text);font-weight:600}
+
+/* EMPTY */
+.empty{text-align:center;padding:36px;color:var(--muted);font-size:13px}
+.empty .ei{font-size:32px;margin-bottom:10px;opacity:.35}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;z-index:999;background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:14px 18px;font-size:13px;font-weight:600;box-shadow:0 8px 30px rgba(0,0,0,.3);transform:translateY(100px);opacity:0;transition:all .3s;pointer-events:none;display:flex;align-items:center;gap:10px;max-width:320px}
+#toast.show{transform:none;opacity:1}
+
+/* SECTIONS */
+.sec{display:none}
+.sec.active{display:block;animation:fadeSlide .3s ease both}
+</style>
+</head>
+<body>
+
+<!-- GATE -->
+<div id="gate">
+  <div class="gate-bg"></div>
+  <div class="gate-grid"></div>
+  <div class="gate-card">
+    <div class="gate-logo">
+      <div class="gate-icon">🔐</div>
+      <h1>Auth System</h1>
+      <p>License Management Platform</p>
+    </div>
+    <div class="portal-tabs">
+      <button class="ptab active" onclick="switchTab('admin',this)">⚙️ Admin Panel</button>
+      <button class="ptab" onclick="switchTab('user',this)">👤 User Portal</button>
+    </div>
+    <div id="gt-admin">
+      <div class="field"><label>Server URL</label><input id="g-url" value="http://localhost:5000/Auth" placeholder="http://localhost:5000/Auth"/></div>
+      <div class="field"><label>Auth Token</label><input id="g-token" type="password" placeholder="Your bearer token…"/></div>
+      <button class="gate-btn gate-btn-a" onclick="adminLogin()">Enter Admin Panel →</button>
+    </div>
+    <div id="gt-user" style="display:none">
+      <div class="field"><label>Server URL</label><input id="gu-url" value="http://localhost:5000/Auth" placeholder="http://localhost:5000/Auth"/></div>
+      <div class="field"><label>Auth Token</label><input id="gu-token" type="password" placeholder="Token (provided by admin)"/></div>
+      <div class="field"><label>Your License Key</label><input id="gu-key" placeholder="MyApp-M-AbCdEfGh" onkeydown="if(event.key==='Enter')userLogin()"/></div>
+      <button class="gate-btn gate-btn-u" onclick="userLogin()">Check My License →</button>
+    </div>
+    <div class="gate-error" id="gate-err"></div>
+  </div>
+</div>
+
+<!-- SHELL -->
+<div id="shell" data-role="admin">
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-row"><div class="sb-icon">🔐</div><div><h2>Auth System</h2></div></div>
+      <span class="sb-badge admin" id="sb-badge">Admin Panel</span>
+    </div>
+    <nav id="sb-nav"></nav>
+    <div class="sb-footer">
+      <div class="sb-info">
+        <div>Server: <span id="sb-url">—</span></div>
+        <div id="sb-lic-row" style="display:none">Key: <span id="sb-key-s">—</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <h1 id="page-title">Dashboard <em>Overview</em></h1>
+      <div class="tr">
+        <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+        <button class="logout-btn" onclick="logout()">← Logout</button>
+      </div>
+    </div>
+
+    <!-- ══ ADMIN SECTIONS ══ -->
+
+    <div class="sec active" id="sec-overview">
+      <div class="stats-row">
+        <div class="stat"><div class="stat-glow g1"></div><div class="stat-label">Total Apps</div><div class="stat-val c1" id="s-apps">—</div><div class="stat-sub">registered</div></div>
+        <div class="stat"><div class="stat-glow g2"></div><div class="stat-label">Active Licenses</div><div class="stat-val c2" id="s-lics">—</div><div class="stat-sub">across all apps</div></div>
+        <div class="stat"><div class="stat-glow g3"></div><div class="stat-label">Server Status</div><div class="stat-val c3" id="s-status">—</div><div class="stat-sub" id="s-time">checking…</div></div>
+        <div class="stat"><div class="stat-glow g4"></div><div class="stat-label">Auth Mode</div><div class="stat-val c4">Bearer</div><div class="stat-sub">token auth</div></div>
+      </div>
+      <div class="g2">
+        <div class="panel">
+          <div class="ph"><h3>📊 License Activity</h3><span class="badge">demo data</span></div>
+          <div class="pb"><div class="chart-wrap"><canvas id="chart-main"></canvas></div></div>
+        </div>
+        <div class="panel">
+          <div class="ph"><h3>⚡ Quick Actions</h3></div>
+          <div class="pb" style="display:grid;gap:8px">
+            <button class="ib ib-p ib-f" onclick="navTo('sec-apps')">＋ Create App</button>
+            <button class="ib ib-g ib-f" onclick="navTo('sec-licenses')">🔑 Generate Licenses</button>
+            <button class="ib ib-g ib-f" onclick="navTo('sec-verify')">✅ Verify License</button>
+            <button class="ib ib-g ib-f" onclick="navTo('sec-audit')">📋 Audit Log</button>
+            <button class="ib ib-d ib-f" onclick="doCleanup()">🧹 Cleanup Expired</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="ph"><h3>📋 Recent Activity</h3><span class="badge" id="audit-cnt">0 events</span></div>
+        <div class="pb" id="audit-preview" style="max-height:200px;overflow-y:auto"><div class="empty"><div class="ei">📋</div>No activity yet.</div></div>
+      </div>
+    </div>
+
+    <div class="sec" id="sec-apps">
+      <div class="g2">
+        <div class="panel">
+          <div class="ph"><h3>＋ Create Application</h3></div>
+          <div class="pb"><div class="fg">
+            <div class="fi"><label>App Name</label><input id="ca-n" placeholder="MyApp"/></div>
+            <div class="fr"><div class="fi"><label>Version</label><input id="ca-v" placeholder="1.0.0"/></div><div class="fi"><label>Download Link</label><input id="ca-l" placeholder="https://…"/></div></div>
+            <button class="ib ib-p ib-f" onclick="createApp()">Create App</button>
+          </div><div class="rbox" id="ca-r"></div></div>
+        </div>
+        <div class="panel">
+          <div class="ph"><h3>🔄 Update Version</h3></div>
+          <div class="pb"><div class="fg">
+            <div class="fi"><label>App Name</label><input id="ua-n" placeholder="MyApp"/></div>
+            <div class="fi"><label>New Version</label><input id="ua-v" placeholder="1.0.1"/></div>
+            <div class="fi"><label>Download Link</label><input id="ua-l" placeholder="https://…"/></div>
+            <button class="ib ib-p ib-f" onclick="updateApp()">Update</button>
+          </div><div class="rbox" id="ua-r"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec" id="sec-licenses">
+      <div class="g2">
+        <div class="panel">
+          <div class="ph"><h3>🔑 Generate Keys</h3></div>
+          <div class="pb"><div class="fg">
+            <div class="fi"><label>App Name</label><input id="gl-n" placeholder="MyApp"/></div>
+            <div class="fr"><div class="fi"><label>Duration</label><select id="gl-d"><option>Lifetime</option><option>Month</option><option>Week</option><option>Day</option></select></div><div class="fi"><label>Quantity (max 500)</label><input id="gl-q" type="number" placeholder="10" min="1" max="500"/></div></div>
+            <button class="ib ib-p ib-f" onclick="genLic()">Generate</button>
+          </div><div class="rbox" id="gl-r"></div></div>
+        </div>
+        <div class="panel">
+          <div class="ph"><h3>📤 Assign License</h3></div>
+          <div class="pb"><div class="fg">
+            <div class="fi"><label>App Name</label><input id="al-n" placeholder="MyApp"/></div>
+            <div class="fi"><label>Duration</label><select id="al-d"><option>Lifetime</option><option>Month</option><option>Week</option><option>Day</option></select></div>
+            <button class="ib ib-p ib-f" onclick="assignLic()">Assign</button>
+          </div><div class="rbox" id="al-r"></div></div>
+        </div>
+        <div class="panel">
+          <div class="ph"><h3>🔍 Lookup License</h3></div>
+          <div class="pb"><div class="fg">
+            <div class="fi"><label>License Key</label><input id="ll-k" placeholder="MyApp-M-AbCdEfGh"/></div>
+            <button class="ib ib-g ib-f" onclick="lookupLic()">Lookup</button>
+          </div><div class="rbox" id="ll-r"></div></div>
+        </div>
+        <div class="panel">
+          <div class="ph"><h3>🚫 Ban License</h3></div>
+          <div class="pb"><div class="fg">
+            <div class="fi"><label>License Key</label><input id="bl-k" placeholder="MyApp-M-AbCdEfGh"/></div>
+            <button class="ib ib-d ib-f" onclick="banLic()">Ban License</button>
+          </div><div class="rbox" id="bl-r"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec" id="sec-hwid">
+      <div class="g2">
+        <div class="panel">
+          <div class="ph"><h3>🖥 Reset HWID</h3></div>
+          <div class="pb"><div class="fg">
+            <div class="fi"><label>License Key</label><input id="rh-k" placeholder="MyApp-M-AbCdEfGh"/></div>
+            <div class="fi"><label>User ID</label><input id="rh-u" placeholder="Discord ID or username"/></div>
+            <button class="ib ib-p ib-f" onclick="resetHWID()">Reset HWID</button>
+          </div><div class="rbox" id="rh-r"></div></div>
+        </div>
+        <div class="panel">
+          <div class="ph"><h3>👤 Update License User</h3></div>
+          <div class="pb"><div class="fg">
+            <div class="fi"><label>License Key</label><input id="uu-k" placeholder="MyApp-M-AbCdEfGh"/></div>
+            <div class="fi"><label>New User ID</label><input id="uu-u" placeholder="Discord ID or username"/></div>
+            <button class="ib ib-p ib-f" onclick="updateUser()">Update User</button>
+          </div><div class="rbox" id="uu-r"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec" id="sec-verify">
+      <div class="panel">
+        <div class="ph"><h3>✅ Verify License</h3><span class="badge">GET /verify-license</span></div>
+        <div class="pb"><div class="fg">
+          <div class="fr"><div class="fi"><label>License Key</label><input id="vl-k" placeholder="MyApp-M-AbCdEfGh"/></div><div class="fi"><label>App Name</label><input id="vl-a" placeholder="MyApp"/></div></div>
+          <div class="fr"><div class="fi"><label>App Secret</label><input id="vl-s" placeholder="16-char secret"/></div><div class="fi"><label>HWID</label><input id="vl-h" placeholder="device hardware id"/></div></div>
+          <div class="fi"><label>Version</label><input id="vl-v" placeholder="1.0.0"/></div>
+          <button class="ib ib-p" onclick="verifyLic()">Verify</button>
+        </div><div class="rbox" id="vl-r"></div></div>
+      </div>
+    </div>
+
+    <div class="sec" id="sec-audit">
+      <div class="panel">
+        <div class="ph"><h3>📋 Full Audit Log</h3><div style="display:flex;gap:8px"><span class="badge" id="audit-total">0 events</span><button class="ib ib-d" style="padding:4px 10px;font-size:11px" onclick="clearAudit()">Clear</button></div></div>
+        <div class="pb" id="audit-full" style="max-height:500px;overflow-y:auto"><div class="empty"><div class="ei">📋</div>No activity yet.</div></div>
+      </div>
+    </div>
+
+    <!-- ══ USER SECTIONS ══ -->
+
+    <div class="sec" id="sec-user-home">
+      <div class="stats-row">
+        <div class="stat"><div class="stat-glow g2"></div><div class="stat-label">Status</div><div class="stat-val c2" id="us-s">—</div><div class="stat-sub">validity</div></div>
+        <div class="stat"><div class="stat-glow g3"></div><div class="stat-label">App</div><div class="stat-val c3" id="us-a" style="font-size:18px">—</div><div class="stat-sub">application</div></div>
+        <div class="stat"><div class="stat-glow g4"></div><div class="stat-label">Expiry</div><div class="stat-val c4" id="us-e" style="font-size:18px">—</div><div class="stat-sub">expires</div></div>
+        <div class="stat"><div class="stat-glow g1"></div><div class="stat-label">User</div><div class="stat-val c1" id="us-u" style="font-size:16px">—</div><div class="stat-sub">assigned to</div></div>
+      </div>
+      <div class="g2">
+        <div class="panel">
+          <div class="ph"><h3>🔑 Your License</h3><span class="pill pb2" id="ul-pill">—</span></div>
+          <div class="pb">
+            <div class="lic-card">
+              <div class="lic-row"><span style="color:var(--muted);font-family:var(--mono);font-size:11px">LICENSE KEY</span></div>
+              <div class="lic-key" id="ul-key">—</div>
+              <div class="lic-row"><span style="color:var(--muted);font-size:12px;font-family:var(--mono)">HWID</span><span style="font-family:var(--mono);font-size:12px;color:var(--sub)" id="ul-hwid">—</span></div>
+              <div class="lic-row"><span style="color:var(--muted);font-size:12px;font-family:var(--mono)">USER</span><span style="font-family:var(--mono);font-size:12px;color:var(--sub)" id="ul-user">—</span></div>
+              <div class="progress-bar"><div class="progress-fill" id="ul-prog" style="width:0%"></div></div>
+              <div style="font-size:11px;color:var(--muted);font-family:var(--mono)" id="ul-pct">—</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="ph"><h3>⏳ Time Remaining</h3></div>
+          <div class="pb">
+            <div class="timer-wrap">
+              <div class="timer-block"><div class="timer-num" id="t-d">—</div><div class="timer-lbl">Days</div></div>
+              <div class="timer-block"><div class="timer-num" id="t-h">—</div><div class="timer-lbl">Hours</div></div>
+              <div class="timer-block"><div class="timer-num" id="t-m">—</div><div class="timer-lbl">Mins</div></div>
+              <div class="timer-block"><div class="timer-num" id="t-s">—</div><div class="timer-lbl">Secs</div></div>
+            </div>
+            <div style="font-size:12px;color:var(--muted);font-family:var(--mono);text-align:center;margin-top:4px" id="timer-msg"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec" id="sec-user-hwid">
+      <div class="panel" style="max-width:500px">
+        <div class="ph"><h3>🖥 Reset Your HWID</h3></div>
+        <div class="pb">
+          <p style="font-size:13px;color:var(--sub);margin-bottom:16px;line-height:1.6">Switched devices? Reset your HWID so your license binds to your new machine on next use.</p>
+          <div class="fg">
+            <div class="fi"><label>License Key</label><input id="urh-k" placeholder="Auto-filled…"/></div>
+            <div class="fi"><label>Your User ID</label><input id="urh-u" placeholder="Discord ID or username"/></div>
+            <button class="ib ib-u ib-f" onclick="userResetHWID()">Reset My HWID</button>
+          </div>
+          <div class="rbox" id="urh-r"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec" id="sec-user-update">
+      <div class="panel" style="max-width:500px">
+        <div class="ph"><h3>👤 Update Your User</h3></div>
+        <div class="pb">
+          <p style="font-size:13px;color:var(--sub);margin-bottom:16px;line-height:1.6">Transfer your license to a different Discord account.</p>
+          <div class="fg">
+            <div class="fi"><label>License Key</label><input id="uuu-k" placeholder="Auto-filled…"/></div>
+            <div class="fi"><label>New User ID</label><input id="uuu-u" placeholder="New Discord ID"/></div>
+            <button class="ib ib-u ib-f" onclick="userUpdateUser()">Update User</button>
+          </div>
+          <div class="rbox" id="uuu-r"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec" id="sec-user-verify">
+      <div class="panel" style="max-width:600px">
+        <div class="ph"><h3>✅ Verify Your License</h3></div>
+        <div class="pb"><div class="fg">
+          <div class="fr"><div class="fi"><label>App Name</label><input id="uvl-a" placeholder="MyApp"/></div><div class="fi"><label>App Secret</label><input id="uvl-s" placeholder="Provided by owner"/></div></div>
+          <div class="fr"><div class="fi"><label>HWID</label><input id="uvl-h" placeholder="Your hardware ID"/></div><div class="fi"><label>Version</label><input id="uvl-v" placeholder="1.0.0"/></div></div>
+          <button class="ib ib-u" onclick="userVerify()">Verify</button>
+        </div><div class="rbox" id="uvl-r"></div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// STATE
+let BASE='',TOKEN='',ROLE='admin',USER_KEY='';
+let auditLog=[],timerInterval=null,chartInst=null,isDark=true;
+
+// GATE
+function switchTab(tab,el){
+  document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('gt-admin').style.display=tab==='admin'?'':'none';
+  document.getElementById('gt-user').style.display=tab==='user'?'':'none';
+}
+
+async function adminLogin(){
+  BASE=document.getElementById('g-url').value.trim().replace(/\/$/,'');
+  TOKEN=document.getElementById('g-token').value.trim();
+  if(!BASE||!TOKEN)return gateErr('Please fill in all fields.');
+  try{
+    const r=await fetch(`${BASE}/check`,{headers:ah()});
+    if(!r.ok)throw new Error('Invalid token or unreachable server.');
+    ROLE='admin';enterShell();refreshStats();buildChart();
+  }catch(e){gateErr(e.message||'Connection failed.');}
+}
+
+async function userLogin(){
+  BASE=document.getElementById('gu-url').value.trim().replace(/\/$/,'');
+  TOKEN=document.getElementById('gu-token').value.trim();
+  USER_KEY=document.getElementById('gu-key').value.trim();
+  if(!USER_KEY)return gateErr('Please enter your license key.');
+  ROLE='user';enterShell();
+  await loadUserLicense();
+}
+
+function gateErr(msg){const el=document.getElementById('gate-err');el.textContent=msg;el.style.display='block';setTimeout(()=>el.style.display='none',4000)}
+
+function enterShell(){
+  document.getElementById('gate').style.display='none';
+  document.getElementById('shell').style.display='block';
+  document.getElementById('shell').dataset.role=ROLE;
+  document.getElementById('sb-url').textContent=BASE.replace(/https?:\/\//,'');
+  if(ROLE==='user'){
+    document.getElementById('sb-badge').textContent='User Portal';
+    document.getElementById('sb-badge').className='sb-badge user';
+    document.getElementById('sb-lic-row').style.display='';
+    document.getElementById('sb-key-s').textContent=USER_KEY.slice(0,14)+'…';
+    setTitle('My','License');
+  }else{
+    document.getElementById('sb-badge').textContent='Admin Panel';
+    document.getElementById('sb-badge').className='sb-badge admin';
+    setTitle('Dashboard','Overview');
+  }
+  buildNav();
+}
+
+function logout(){
+  BASE=TOKEN=USER_KEY='';ROLE='admin';
+  clearInterval(timerInterval);timerInterval=null;auditLog=[];
+  document.getElementById('shell').style.display='none';
+  document.getElementById('gate').style.display='';
+  document.querySelectorAll('.rbox').forEach(b=>{b.className='rbox';b.textContent='';});
+}
+
+// NAV
+const ANAV=[
+  {s:'Overview',items:[{id:'sec-overview',i:'📊',l:'Dashboard'}]},
+  {s:'Management',items:[{id:'sec-apps',i:'📦',l:'Applications'},{id:'sec-licenses',i:'🔑',l:'Licenses'},{id:'sec-hwid',i:'🖥',l:'HWID Tools'}]},
+  {s:'Tools',items:[{id:'sec-verify',i:'✅',l:'Verify License'},{id:'sec-audit',i:'📋',l:'Audit Log'}]},
+];
+const UNAV=[
+  {s:'My License',items:[{id:'sec-user-home',i:'🔑',l:'My License'}]},
+  {s:'Actions',items:[{id:'sec-user-hwid',i:'🖥',l:'Reset HWID'},{id:'sec-user-update',i:'👤',l:'Update User'},{id:'sec-user-verify',i:'✅',l:'Verify License'}]},
+];
+
+function buildNav(){
+  const nav=document.getElementById('sb-nav');nav.innerHTML='';
+  (ROLE==='admin'?ANAV:UNAV).forEach(g=>{
+    const s=document.createElement('div');s.className='nav-sec';s.textContent=g.s;nav.appendChild(s);
+    g.items.forEach(item=>{
+      const el=document.createElement('div');
+      el.className='nav-item'+(ROLE==='user'?' u-style':'');
+      el.dataset.target=item.id;
+      el.innerHTML=`<span class="nav-icon">${item.i}</span>${item.l}`;
+      el.onclick=()=>navTo(item.id);
+      nav.appendChild(el);
+    });
+  });
+  // activate first
+  const first=ROLE==='admin'?'sec-overview':'sec-user-home';
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById(first);if(el)el.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.target===first));
+}
+
+function navTo(id){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById(id);if(el)el.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.target===id));
+  // auto-fill user key
+  if(ROLE==='user'){
+    const m={s:'sec-user-hwid,sec-user-update,sec-user-verify'.split(',')};
+    if(['sec-user-hwid','sec-user-update','sec-user-verify'].includes(id)){
+      const inp=document.querySelector(`#${id} input`);if(inp&&!inp.value)inp.value=USER_KEY;
+    }
+  }
+  const item=document.querySelector(`[data-target="${id}"]`);
+  if(item){const txt=item.childNodes[1]?.textContent?.trim()||'';setTitle(ROLE==='admin'?'':'' ,txt);}
+}
+
+function setTitle(pre,em){document.getElementById('page-title').innerHTML=pre?`${pre} <em>${em}</em>`:`<em>${em}</em>`;}
+
+// API
+function ah(){return{'Content-Type':'application/json','Authorization':`Bearer ${TOKEN}`};}
+async function api(method,path,body){
+  const opts={method,headers:ah()};
+  if(body)opts.body=JSON.stringify(body);
+  const r=await fetch(`${BASE}${path}`,opts);
+  const data=await r.json().catch(()=>({error:'Non-JSON response'}));
+  return{ok:r.ok,status:r.status,data};
+}
+
+function showR(id,data,ok){
+  const el=document.getElementById(id);
+  el.textContent=typeof data==='string'?data:JSON.stringify(data,null,2);
+  el.className=`rbox show ${ok?'ok':'err'}`;
+}
+
+// TOAST
+function toast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  t.innerHTML=`<span>${{ok:'✅',err:'❌',info:'ℹ️',warn:'⚠️'}[type]||'ℹ️'}</span><span>${msg}</span>`;
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// AUDIT
+const DC={ok:'var(--a3)',err:'var(--danger)',info:'var(--a2)',warn:'var(--warn)'};
+function addAudit(msg,type='ok',detail=''){
+  auditLog.unshift({msg,type,detail,time:new Date().toLocaleTimeString()});
+  if(auditLog.length>200)auditLog.pop();
+  renderAudit();
+}
+function renderAudit(){
+  const cnt=`${auditLog.length} event${auditLog.length!==1?'s':''}`;
+  ['audit-cnt','audit-total'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=cnt;});
+  const html=auditLog.length===0
+    ?'<div class="empty"><div class="ei">📋</div>No activity yet.</div>'
+    :auditLog.map(e=>`<div class="log-entry"><div class="log-dot" style="background:${DC[e.type]||'var(--muted)'}"></div><div class="log-time">${e.time}</div><div class="log-msg"><strong>${e.msg}</strong>${e.detail?' — '+e.detail:''}</div></div>`).join('');
+  ['audit-preview','audit-full'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML=html;});
+}
+function clearAudit(){auditLog=[];renderAudit();toast('Log cleared','info');}
+
+// STATS
+async function refreshStats(){
+  try{
+    const{ok,data}=await api('GET','/check');
+    if(ok){
+      document.getElementById('s-apps').textContent=data.total_apps;
+      document.getElementById('s-lics').textContent=data.total_licenses;
+      document.getElementById('s-status').textContent='Online';
+      document.getElementById('s-time').textContent='updated '+new Date().toLocaleTimeString();
+    }
+  }catch{document.getElementById('s-status').textContent='Offline';}
+}
+
+// CHART
+function buildChart(){
+  const ctx=document.getElementById('chart-main');if(!ctx)return;
+  if(chartInst){chartInst.destroy();}
+  const tc=isDark?'#475569':'#94a3b8',gc=isDark?'rgba(255,255,255,.04)':'rgba(0,0,0,.05)';
+  chartInst=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+      datasets:[
+        {label:'Assigned',data:[3,7,2,9,5,11,4],backgroundColor:isDark?'rgba(232,121,249,.8)':'rgba(192,38,211,.8)',borderRadius:5,borderSkipped:false},
+        {label:'Verified',data:[12,18,9,22,15,30,10],backgroundColor:isDark?'rgba(34,211,238,.6)':'rgba(8,145,178,.6)',borderRadius:5,borderSkipped:false},
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:isDark?'#94a3b8':'#475569',font:{family:'DM Mono',size:11}}}},
+      scales:{x:{grid:{color:gc},ticks:{color:tc,font:{family:'DM Mono',size:11}}},y:{grid:{color:gc},ticks:{color:tc,font:{family:'DM Mono',size:11}}}},
+    }
+  });
+}
+
+// ADMIN OPS
+async function createApp(){
+  const n=document.getElementById('ca-n').value,v=document.getElementById('ca-v').value,l=document.getElementById('ca-l').value;
+  if(!n)return toast('App name required','err');
+  const{ok,data}=await api('POST','/create-app',{app_name:n,version:v,link:l});
+  showR('ca-r',data,ok);addAudit(ok?'App created':'App creation failed',ok?'ok':'err',n);
+  if(ok){toast(`"${n}" created`,'ok');refreshStats();}
+}
+async function updateApp(){
+  const n=document.getElementById('ua-n').value,v=document.getElementById('ua-v').value,l=document.getElementById('ua-l').value;
+  const{ok,data}=await api('POST','/update-version',{app_name:n,version:v,link:l});
+  showR('ua-r',data,ok);addAudit(ok?'App updated':'Update failed',ok?'ok':'err',n+' v'+v);
+  if(ok)toast(`"${n}" updated`,'ok');
+}
+async function genLic(){
+  const n=document.getElementById('gl-n').value,d=document.getElementById('gl-d').value,q=parseInt(document.getElementById('gl-q').value||1);
+  const{ok,data}=await api('POST','/gen-license',{app_name:n,duration:d,quantity:q});
+  showR('gl-r',data,ok);addAudit(ok?`${q} license(s) generated`:'Gen failed',ok?'ok':'err',n+'/'+d);
+  if(ok)toast(`${q} license(s) generated`,'ok');
+}
+async function assignLic(){
+  const n=document.getElementById('al-n').value,d=document.getElementById('al-d').value;
+  const{ok,data}=await api('POST','/assign-license',{app_name:n,duration:d});
+  showR('al-r',data,ok);addAudit(ok?'License assigned':'Assign failed',ok?'ok':'err',n+'/'+d);
+  if(ok){toast('License assigned','ok');refreshStats();}
+}
+async function lookupLic(){
+  const k=document.getElementById('ll-k').value;
+  const{ok,data}=await api('POST','/get-license',{license_key:k});
+  showR('ll-r',data,ok);addAudit(ok?'License lookup':'Not found',ok?'info':'err',k.slice(0,16));
+}
+async function banLic(){
+  const k=document.getElementById('bl-k').value;
+  if(!confirm('Ban this license? Cannot be undone.'))return;
+  const{ok,data}=await api('POST','/ban-license',{license_key:k});
+  showR('bl-r',data,ok);addAudit(ok?'License banned':'Ban failed',ok?'warn':'err',k.slice(0,16));
+  if(ok){toast('License banned','warn');refreshStats();}
+}
+async function resetHWID(){
+  const k=document.getElementById('rh-k').value,u=document.getElementById('rh-u').value;
+  const{ok,data}=await api('POST','/reset-hwid',{license_key:k,user:u});
+  showR('rh-r',data,ok);addAudit(ok?'HWID reset':'HWID reset failed',ok?'ok':'err',k.slice(0,14));
+  if(ok)toast('HWID reset','ok');
+}
+async function updateUser(){
+  const k=document.getElementById('uu-k').value,u=document.getElementById('uu-u').value;
+  const{ok,data}=await api('PATCH','/update-user',{license_key:k,user:u});
+  showR('uu-r',data,ok);addAudit(ok?'User updated':'Update failed',ok?'ok':'err',k.slice(0,14));
+  if(ok)toast('User updated','ok');
+}
+async function verifyLic(){
+  const p=new URLSearchParams({license_key:document.getElementById('vl-k').value,app_name:document.getElementById('vl-a').value,app_secret:document.getElementById('vl-s').value,hwid:document.getElementById('vl-h').value,version:document.getElementById('vl-v').value});
+  const{ok,data}=await api('GET',`/verify-license?${p}`);
+  showR('vl-r',data,ok);addAudit(ok?'License verified':'Verify failed',ok?'ok':'err');
+}
+async function doCleanup(){
+  if(!confirm('Remove all expired licenses?'))return;
+  const{ok,data}=await api('POST','/cleanup');
+  addAudit(ok?data.message:'Cleanup failed',ok?'ok':'err');
+  if(ok){toast(data.message,'ok');refreshStats();}
+}
+
+// USER OPS
+async function loadUserLicense(){
+  try{
+    const r=await fetch(`${BASE}/get-license`,{method:'POST',headers:ah(),body:JSON.stringify({license_key:USER_KEY})});
+    const d=await r.json();
+    if(!r.ok){toast(d.error||'License not found','err');return;}
+    renderUserDash(d);
+  }catch(e){toast('Could not reach server.','err');}
+}
+
+function renderUserDash(d){
+  document.getElementById('us-s').textContent=d.valid?'Valid':'Invalid';
+  document.getElementById('us-a').textContent=d.app_name||'—';
+  document.getElementById('us-u').textContent=d.user||'Unassigned';
+  document.getElementById('ul-key').textContent=d.license_key;
+  document.getElementById('ul-hwid').textContent=d.hwid||'Not bound';
+  document.getElementById('ul-user').textContent=d.user||'Unassigned';
+  const expiry=d.expiry_date;
+  if(expiry==='Lifetime'){
+    document.getElementById('us-e').textContent='Lifetime';
+    document.getElementById('ul-pill').textContent='LIFETIME';document.getElementById('ul-pill').className='pill pp';
+    document.getElementById('ul-prog').style.width='100%';
+    document.getElementById('ul-pct').textContent='Never expires';
+    document.getElementById('timer-msg').textContent='∞ Lifetime license';
+    ['t-d','t-h','t-m','t-s'].forEach(id=>document.getElementById(id).textContent='∞');
+  }else{
+    document.getElementById('us-e').textContent=expiry?expiry.split(' ')[0]:'—';
+    document.getElementById('ul-pill').textContent='ACTIVE';document.getElementById('ul-pill').className='pill pg';
+    startCountdown(expiry);
+  }
+}
+
+function startCountdown(expiryStr){
+  clearInterval(timerInterval);
+  const exp=new Date(expiryStr.replace(' ','T')+'Z');
+  function tick(){
+    const now=new Date(),diff=exp-now;
+    if(diff<=0){
+      ['t-d','t-h','t-m','t-s'].forEach(id=>document.getElementById(id).textContent='0');
+      document.getElementById('timer-msg').textContent='License expired';
+      document.getElementById('ul-pill').textContent='EXPIRED';document.getElementById('ul-pill').className='pill pr';
+      clearInterval(timerInterval);return;
+    }
+    const days=Math.floor(diff/864e5),hours=Math.floor((diff%864e5)/36e5),mins=Math.floor((diff%36e5)/6e4),secs=Math.floor((diff%6e4)/1e3);
+    document.getElementById('t-d').textContent=days;
+    document.getElementById('t-h').textContent=String(hours).padStart(2,'0');
+    document.getElementById('t-m').textContent=String(mins).padStart(2,'0');
+    document.getElementById('t-s').textContent=String(secs).padStart(2,'0');
+    const pct=Math.max(0,Math.min(100,(diff/(30*864e5))*100));
+    document.getElementById('ul-prog').style.width=pct+'%';
+    document.getElementById('ul-pct').textContent=`${days}d ${hours}h remaining`;
+    document.getElementById('timer-msg').textContent=`Expires ${exp.toLocaleDateString()}`;
+  }
+  tick();timerInterval=setInterval(tick,1000);
+}
+
+async function userResetHWID(){
+  const k=document.getElementById('urh-k').value||USER_KEY,u=document.getElementById('urh-u').value;
+  if(!u)return toast('Enter your user ID','err');
+  const{ok,data}=await api('POST','/reset-hwid',{license_key:k,user:u});
+  showR('urh-r',data,ok);if(ok)toast('HWID reset — rebind on next use','ok');else toast(data.error||'Failed','err');
+}
+async function userUpdateUser(){
+  const k=document.getElementById('uuu-k').value||USER_KEY,u=document.getElementById('uuu-u').value;
+  if(!u)return toast('Enter new user ID','err');
+  const{ok,data}=await api('PATCH','/update-user',{license_key:k,user:u});
+  showR('uuu-r',data,ok);if(ok)toast('User updated','ok');else toast(data.error||'Failed','err');
+}
+async function userVerify(){
+  const p=new URLSearchParams({license_key:USER_KEY,app_name:document.getElementById('uvl-a').value,app_secret:document.getElementById('uvl-s').value,hwid:document.getElementById('uvl-h').value,version:document.getElementById('uvl-v').value});
+  const{ok,data}=await api('GET',`/verify-license?${p}`);
+  showR('uvl-r',data,ok);if(ok)toast('Verified ✓','ok');else toast(data.error||'Failed','err');
+}
+
+// THEME
+function toggleTheme(){
+  isDark=!isDark;
+  document.documentElement.dataset.theme=isDark?'':'light';
+  document.querySelector('.theme-btn').textContent=isDark?'🌙':'☀️';
+  if(chartInst){chartInst.destroy();chartInst=null;buildChart();}
+}
+</script>
+</body>
+</html>

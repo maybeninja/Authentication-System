@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>License Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Cabinet+Grotesk:wght@400;500;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#08080f;
+  --surface:#0f0f1a;
+  --card:#141421;
+  --border:#1e1e30;
+  --accent:#7c6af7;
+  --accent-glow:rgba(124,106,247,0.25);
+  --accent2:#22d3ee;
+  --ok:#34d399;
+  --danger:#f87171;
+  --warn:#fbbf24;
+  --text:#f1f0ff;
+  --muted:#6b6b8a;
+  --mono:'DM Mono',monospace;
+  --sans:'Cabinet Grotesk',sans-serif;
+  --radius:16px;
+  --transition:0.2s cubic-bezier(0.4,0,0.2,1);
+}
+[data-theme="light"]{
+  --bg:#f4f3ff;
+  --surface:#ffffff;
+  --card:#fafafe;
+  --border:#e4e2f5;
+  --accent:#6152e8;
+  --accent-glow:rgba(97,82,232,0.15);
+  --text:#1a1a2e;
+  --muted:#8b89a8;
+  --border:#dddaf5;
+}
+
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  transition:background var(--transition),color var(--transition);
+  position:relative;
+  overflow-x:hidden;
+}
+
+/* Atmospheric background */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(124,106,247,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(34,211,238,0.07) 0%, transparent 60%);
+  pointer-events:none;
+  z-index:0;
+  transition:opacity var(--transition);
+}
+[data-theme="light"] body::before{
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(97,82,232,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(34,211,238,0.05) 0%, transparent 60%);
+}
+
+/* Grid */
+body::after{
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(124,106,247,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(124,106,247,0.04) 1px,transparent 1px);
+  background-size:48px 48px;
+  pointer-events:none;z-index:0;
+}
+
+.page{position:relative;z-index:1;width:100%;max-width:520px}
+
+/* Theme toggle */
+.theme-toggle{
+  position:fixed;top:24px;right:24px;z-index:100;
+  width:40px;height:40px;border-radius:12px;
+  background:var(--card);border:1px solid var(--border);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:18px;transition:all var(--transition);
+}
+.theme-toggle:hover{border-color:var(--accent);transform:scale(1.08)}
+
+/* Header */
+.portal-header{text-align:center;margin-bottom:40px}
+.portal-logo{
+  width:64px;height:64px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:20px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:30px;margin:0 auto 20px;
+  box-shadow:0 0 40px var(--accent-glow);
+  animation:float 4s ease-in-out infinite;
+}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+.portal-header h1{
+  font-size:32px;font-weight:900;letter-spacing:-0.03em;
+  margin-bottom:8px;
+}
+.portal-header h1 em{font-style:normal;color:var(--accent)}
+.portal-header p{color:var(--muted);font-size:15px;font-weight:500}
+
+/* Card */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:32px;
+  transition:all var(--transition);
+  animation:slideUp .4s cubic-bezier(0.16,1,0.3,1) both;
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+
+/* Input */
+.input-group{position:relative;margin-bottom:16px}
+.input-group label{
+  display:block;font-size:11px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:8px;font-family:var(--mono);
+}
+.input-wrap{position:relative}
+.input-wrap input{
+  width:100%;
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:12px;
+  padding:14px 48px 14px 16px;
+  font-size:14px;font-family:var(--mono);
+  color:var(--text);outline:none;
+  transition:all var(--transition);
+  letter-spacing:.03em;
+}
+.input-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-glow)}
+.input-icon{
+  position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  font-size:16px;opacity:.4;pointer-events:none;
+}
+
+/* Button */
+.btn{
+  width:100%;padding:14px;border-radius:12px;border:none;
+  font-size:15px;font-weight:800;font-family:var(--sans);
+  cursor:pointer;transition:all var(--transition);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  letter-spacing:-.01em;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent) 0%,#9b6dff 100%);
+  color:#fff;
+  box-shadow:0 4px 24px var(--accent-glow);
+}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 32px var(--accent-glow)}
+.btn-primary:active{transform:translateY(0)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* Spinner */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{
+  width:16px;height:16px;border:2px solid rgba(255,255,255,.3);
+  border-top-color:#fff;border-radius:50%;
+  animation:spin .6s linear infinite;
+}
+
+/* Result card */
+.result{
+  margin-top:20px;
+  border-radius:var(--radius);
+  overflow:hidden;
+  animation:slideUp .3s cubic-bezier(0.16,1,0.3,1) both;
+  display:none;
+}
+.result.show{display:block}
+.result-header{
+  padding:16px 20px;
+  display:flex;align-items:center;gap:10px;
+  font-weight:700;font-size:14px;
+}
+.result.ok .result-header{background:rgba(52,211,153,.1);color:var(--ok);border:1px solid rgba(52,211,153,.2);border-bottom:none;border-radius:var(--radius) var(--radius) 0 0}
+.result.err .result-header{background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.2);border-bottom:none;border-radius:var(--radius) var(--radius) 0 0}
+.result-body{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-top:none;
+  border-radius:0 0 var(--radius) var(--radius);
+  padding:20px;
+}
+
+/* Fields grid */
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field-item{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:12px 14px;
+}
+.field-item .fl{font-size:10px;font-family:var(--mono);color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.field-item .fv{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--text);word-break:break-all}
+.field-item.full{grid-column:1/-1}
+
+/* Countdown */
+.countdown-wrap{margin-top:16px}
+.countdown-label{font-size:11px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.countdown{display:flex;gap:8px}
+.cd-unit{
+  flex:1;background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:10px 8px;text-align:center;
+}
+.cd-num{font-size:22px;font-weight:900;font-family:var(--mono);color:var(--accent);line-height:1}
+.cd-lbl{font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-top:3px}
+
+/* Progress bar */
+.expiry-bar-wrap{margin-top:14px}
+.expiry-bar-label{display:flex;justify-content:space-between;font-size:11px;font-family:var(--mono);color:var(--muted);margin-bottom:6px}
+.expiry-bar{height:6px;background:var(--border);border-radius:100px;overflow:hidden}
+.expiry-bar-fill{height:100%;border-radius:100px;transition:width 1s}
+
+/* Status badge */
+.status-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 12px;border-radius:100px;font-size:12px;font-weight:700;
+}
+.badge-ok{background:rgba(52,211,153,.12);color:var(--ok);border:1px solid rgba(52,211,153,.25)}
+.badge-err{background:rgba(248,113,113,.12);color:var(--danger);border:1px solid rgba(248,113,113,.25)}
+.badge-life{background:rgba(124,106,247,.12);color:var(--accent);border:1px solid rgba(124,106,247,.25)}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* Server config */
+.server-cfg{
+  margin-bottom:20px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:14px 16px;
+  display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+}
+.server-cfg input{
+  flex:1;min-width:160px;background:transparent;border:none;
+  font-size:12px;font-family:var(--mono);color:var(--muted);outline:none;
+}
+.server-cfg label{font-size:10px;font-family:var(--mono);color:var(--muted);letter-spacing:.08em;flex-shrink:0}
+.server-cfg .cfg-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--ok);flex-shrink:0;
+  box-shadow:0 0 8px var(--ok);
+}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+
+<div class="page">
+  <div class="portal-header">
+    <div class="portal-logo">🔐</div>
+    <h1>License <em>Portal</em></h1>
+    <p>Check your license status and expiry</p>
+  </div>
+
+  <div class="card">
+    <!-- Server config (subtle) -->
+    <div class="server-cfg">
+      <div class="cfg-dot" id="cfg-dot"></div>
+      <label>SERVER</label>
+      <input id="cfg-url" type="text" value="http://localhost:5000/Auth" placeholder="Server URL" onchange="updateCfg()"/>
+      <input id="cfg-token" type="password" placeholder="Auth token" onchange="updateCfg()" style="max-width:120px"/>
+    </div>
+
+    <div class="input-group">
+      <label>Your License Key</label>
+      <div class="input-wrap">
+        <input id="license-input" type="text" placeholder="e.g. MyApp-M-AbCdEfGh"
+          onkeydown="if(event.key==='Enter')checkLicense()" autocomplete="off" spellcheck="false"/>
+        <span class="input-icon">🔑</span>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="check-btn" onclick="checkLicense()">
+      Check License
+    </button>
+
+    <!-- Result -->
+    <div class="result" id="result">
+      <div class="result-header" id="result-header"></div>
+      <div class="result-body" id="result-body"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let BASE = 'http://localhost:5000/Auth';
+let TOKEN = '';
+let countdownInterval = null;
+
+function updateCfg(){
+  BASE = document.getElementById('cfg-url').value.trim();
+  TOKEN = document.getElementById('cfg-token').value.trim();
+}
+
+function toggleTheme(){
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.querySelector('.theme-toggle').textContent = isDark ? '🌑' : '🌙';
+}
+
+async function checkLicense(){
+  const key = document.getElementById('license-input').value.trim();
+  if(!key) return shake(document.getElementById('license-input'));
+
+  const btn = document.getElementById('check-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Checking…';
+
+  if(countdownInterval) clearInterval(countdownInterval);
+
+  try{
+    const res = await fetch(`${BASE}/get-license`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${TOKEN}`},
+      body:JSON.stringify({license_key:key})
+    });
+    const data = await res.json();
+    renderResult(res.ok, res.status, data, key);
+  }catch(e){
+    renderError('Cannot reach server. Check the URL above.');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'Check License';
+}
+
+function renderResult(ok, status, data, key){
+  const result = document.getElementById('result');
+  const header = document.getElementById('result-header');
+  const body = document.getElementById('result-body');
+  result.className = `result show ${ok?'ok':'err'}`;
+
+  if(!ok){
+    const msgs = {403:'License has expired.',404:'License key not found.',401:'Authentication error.'};
+    header.innerHTML = `❌ ${msgs[status]||data.error||'Something went wrong'}`;
+    body.innerHTML = `<div style="font-family:var(--mono);font-size:12px;color:var(--muted)">Key: <span style="color:var(--text)">${key}</span></div>`;
+    return;
+  }
+
+  const expiry = data.expiry_date;
+  const isLifetime = expiry === 'Lifetime';
+
+  header.innerHTML = `✅ License Valid <span class="${isLifetime?'badge-life':'badge-ok'} status-badge" style="margin-left:auto"><span class="badge-dot"></span>${isLifetime?'Lifetime':'Active'}</span>`;
+
+  let cdHtml = '';
+  let barHtml = '';
+
+  if(!isLifetime){
+    const expiryDate = new Date(expiry.replace(' ','T')+'Z');
+    const now = new Date();
+    const totalMs = expiryDate - now;
+
+    if(totalMs > 0){
+      cdHtml = `
+      <div class="countdown-wrap">
+        <div class="countdown-label">Time Remaining</div>
+        <div class="countdown">
+          <div class="cd-unit"><div class="cd-num" id="cd-d">0</div><div class="cd-lbl">Days</div></div>
+          <div class="cd-unit"><div class="cd-num" id="cd-h">0</div><div class="cd-lbl">Hours</div></div>
+          <div class="cd-unit"><div class="cd-num" id="cd-m">0</div><div class="cd-lbl">Mins</div></div>
+          <div class="cd-unit"><div class="cd-num" id="cd-s">0</div><div class="cd-lbl">Secs</div></div>
+        </div>
+      </div>`;
+
+      // Progress bar — estimate total duration from expiry (rough: 30d, 7d, 1d, Lifetime)
+      const guesses = [30*86400000, 7*86400000, 86400000];
+      let bestGuess = guesses.find(g => totalMs <= g) || guesses[0];
+      const pct = Math.max(2, Math.min(100, (totalMs/bestGuess)*100));
+      const barColor = pct > 50 ? 'var(--ok)' : pct > 20 ? 'var(--warn)' : 'var(--danger)';
+      barHtml = `
+      <div class="expiry-bar-wrap">
+        <div class="expiry-bar-label"><span>Expires</span><span>${expiry} UTC</span></div>
+        <div class="expiry-bar"><div class="expiry-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+      </div>`;
+
+      startCountdown(expiryDate);
+    }
+  }
+
+  body.innerHTML = `
+    <div class="fields">
+      <div class="field-item full">
+        <div class="fl">License Key</div>
+        <div class="fv">${data.license_key}</div>
+      </div>
+      <div class="field-item">
+        <div class="fl">Application</div>
+        <div class="fv">${data.app_name}</div>
+      </div>
+      <div class="field-item">
+        <div class="fl">User</div>
+        <div class="fv">${data.user||'—'}</div>
+      </div>
+      <div class="field-item">
+        <div class="fl">HWID Bound</div>
+        <div class="fv">${data.hwid && data.hwid!=='Not bound' ? '✅ Yes' : '⬜ No'}</div>
+      </div>
+      <div class="field-item">
+        <div class="fl">Status</div>
+        <div class="fv">${isLifetime?'♾ Lifetime':'✅ Active'}</div>
+      </div>
+    </div>
+    ${barHtml}
+    ${cdHtml}
+  `;
+}
+
+function renderError(msg){
+  const result = document.getElementById('result');
+  result.className = 'result show err';
+  document.getElementById('result-header').innerHTML = `❌ Error`;
+  document.getElementById('result-body').innerHTML = `<div style="font-family:var(--mono);font-size:13px;color:var(--danger)">${msg}</div>`;
+}
+
+function startCountdown(expiryDate){
+  if(countdownInterval) clearInterval(countdownInterval);
+  function tick(){
+    const diff = expiryDate - new Date();
+    if(diff <= 0){ clearInterval(countdownInterval); return; }
+    const d=Math.floor(diff/86400000);
+    const h=Math.floor((diff%86400000)/3600000);
+    const m=Math.floor((diff%3600000)/60000);
+    const s=Math.floor((diff%60000)/1000);
+    const set = (id,val) => { const el=document.getElementById(id); if(el) el.textContent=String(val).padStart(2,'0'); };
+    set('cd-d',d); set('cd-h',h); set('cd-m',m); set('cd-s',s);
+  }
+  tick();
+  countdownInterval = setInterval(tick, 1000);
+}
+
+function shake(el){
+  el.style.animation='none';
+  requestAnimationFrame(()=>{
+    el.style.animation='shake .3s ease';
+  });
+}
+
+const shakeKf = document.createElement('style');
+shakeKf.textContent='@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}';
+document.head.appendChild(shakeKf);
+</script>
+</body>
+</html>

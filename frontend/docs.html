@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Auth System — Documentation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Fraunces:ital,wght@0,300;0,700;0,900;1,300&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0c10;--s1:#111116;--s2:#17171e;--s3:#1e1e28;
+  --border:#252530;--border2:#30303e;
+  --gold:#f0c040;--cyan:#38e8c8;--red:#ff6b6b;--green:#5df0a0;--blue:#60b4ff;--orange:#ffaa55;--purple:#c084fc;
+  --text:#eeeef5;--sub:#888899;--muted:#50505f;
+  --mono:'Fira Code',monospace;--serif:'Fraunces',serif;
+  --r:10px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh;display:flex}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:260px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;
+  background:var(--s1);border-right:1px solid var(--border);
+  padding:0 0 32px;
+}
+.sb-header{padding:28px 24px 20px;border-bottom:1px solid var(--border)}
+.sb-logo{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.sb-logo-icon{width:32px;height:32px;background:var(--gold);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.sb-logo h1{font-family:var(--serif);font-size:16px;font-weight:700;color:var(--text)}
+.version-pill{display:inline-block;padding:3px 10px;background:rgba(240,192,64,.1);border:1px solid rgba(240,192,64,.25);border-radius:100px;font-size:11px;color:var(--gold);letter-spacing:.05em}
+.search-box{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-family:var(--mono);font-size:12px;color:var(--text);outline:none;margin-top:12px}
+.search-box::placeholder{color:var(--muted)}
+.search-box:focus{border-color:var(--gold)}
+
+.sb-section{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:16px 24px 6px}
+.sb-link{display:flex;align-items:center;gap:8px;padding:7px 24px;font-size:12px;color:var(--sub);cursor:pointer;border-left:2px solid transparent;transition:all .12s;text-decoration:none;user-select:none}
+.sb-link:hover{color:var(--text);background:rgba(255,255,255,.02)}
+.sb-link.active{color:var(--gold);border-left-color:var(--gold);background:rgba(240,192,64,.04)}
+.sb-link .method{font-size:9px;padding:1px 5px;border-radius:3px;font-weight:500;flex-shrink:0}
+.m-get{background:rgba(56,232,200,.15);color:var(--cyan)}
+.m-post{background:rgba(96,180,255,.15);color:var(--blue)}
+.m-patch{background:rgba(255,170,85,.15);color:var(--orange)}
+.m-delete{background:rgba(255,107,107,.15);color:var(--red)}
+
+/* ── MAIN ── */
+.main{flex:1;max-width:900px;padding:64px 72px;overflow-y:auto}
+@media(max-width:1100px){.main{padding:48px 40px}}
+
+/* ── HERO ── */
+.hero{margin-bottom:72px}
+.hero-tag{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:16px}
+.hero h2{font-family:var(--serif);font-size:52px;font-weight:900;line-height:1.1;margin-bottom:20px}
+.hero h2 em{font-style:italic;color:var(--gold)}
+.hero p{font-size:14px;color:var(--sub);line-height:1.8;max-width:520px;font-family:var(--mono)}
+.hero-badges{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap}
+.hb{padding:6px 14px;border-radius:100px;font-size:11px;border:1px solid var(--border2);color:var(--sub)}
+.hb.green{border-color:rgba(93,240,160,.3);color:var(--green);background:rgba(93,240,160,.05)}
+.hb.cyan{border-color:rgba(56,232,200,.3);color:var(--cyan);background:rgba(56,232,200,.05)}
+.hb.gold{border-color:rgba(240,192,64,.3);color:var(--gold);background:rgba(240,192,64,.05)}
+
+/* ── SECTION TITLES ── */
+.doc-section{margin-bottom:64px;scroll-margin-top:32px}
+.section-label{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.section-title{font-family:var(--serif);font-size:30px;font-weight:700;margin-bottom:16px;color:var(--text)}
+.section-title em{font-style:italic;color:var(--gold)}
+.prose{font-size:13px;color:var(--sub);line-height:1.9;max-width:660px}
+.prose strong{color:var(--text);font-weight:500}
+.prose code{background:var(--s2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:12px;color:var(--cyan)}
+
+/* ── SETUP STEPS ── */
+.steps{display:grid;gap:16px;margin:24px 0}
+.step{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:20px 24px;display:flex;gap:16px}
+.step-num{width:28px;height:28px;background:var(--gold);color:#000;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px}
+.step-body h4{font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px}
+.step-body p{font-size:12px;color:var(--sub);line-height:1.7}
+.step-body code{background:var(--s2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:11px;color:var(--cyan)}
+
+/* ── CONFIG TABLE ── */
+.config-table{width:100%;border-collapse:collapse;margin:20px 0;font-size:12px}
+.config-table th{text-align:left;padding:8px 14px;font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border)}
+.config-table td{padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:top}
+.config-table tr:last-child td{border-bottom:none}
+.config-table td:first-child{color:var(--cyan)}
+.config-table td:nth-child(2){color:var(--green)}
+.config-table td:nth-child(3){color:var(--sub)}
+
+/* ── CODE BLOCKS ── */
+.code-block{margin:16px 0;border-radius:var(--r);overflow:hidden;border:1px solid var(--border)}
+.code-header{background:var(--s2);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.code-lang{font-size:11px;color:var(--muted);letter-spacing:.05em}
+.copy-btn{font-size:11px;color:var(--sub);background:none;border:1px solid var(--border);border-radius:5px;padding:3px 10px;cursor:pointer;font-family:var(--mono);transition:all .12s}
+.copy-btn:hover{color:var(--text);border-color:var(--border2)}
+.copy-btn.copied{color:var(--green);border-color:rgba(93,240,160,.3)}
+pre{background:var(--s1);padding:20px;overflow-x:auto;font-size:12.5px;line-height:1.7;tab-size:2}
+pre code{background:none;border:none;padding:0;font-size:inherit;color:inherit}
+
+/* Syntax highlight */
+.kw{color:var(--purple)}.str{color:var(--green)}.num{color:var(--orange)}
+.cm{color:var(--muted);font-style:italic}.flag{color:var(--cyan)}.url{color:var(--blue)}
+.key{color:var(--gold)}.val{color:var(--green)}.punct{color:var(--sub)}
+.cmd{color:var(--text)}.arg{color:var(--sub)}
+
+/* ── ENDPOINT CARDS ── */
+.endpoint{margin:32px 0;background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden;scroll-margin-top:32px}
+.ep-header{padding:20px 24px;background:var(--s2);border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:14px}
+.ep-method{padding:4px 10px;border-radius:5px;font-size:11px;font-weight:500;flex-shrink:0;margin-top:2px}
+.ep-path{font-size:15px;font-weight:500;color:var(--text);flex:1}
+.ep-desc{font-size:12px;color:var(--sub);margin-top:4px}
+.ep-body{padding:24px}
+.ep-section-title{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+
+/* ── PARAMS TABLE ── */
+.params-table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:12px}
+.params-table th{text-align:left;padding:7px 12px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border)}
+.params-table td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:top}
+.params-table tr:last-child td{border-bottom:none}
+.param-name{color:var(--cyan);font-weight:500}
+.param-type{color:var(--orange)}
+.param-req{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px}
+.req{background:rgba(255,107,107,.12);color:var(--red)}
+.opt{background:rgba(80,80,95,.2);color:var(--muted)}
+.param-desc{color:var(--sub)}
+
+/* ── STATUS CODES ── */
+.status-list{display:grid;gap:6px;margin-bottom:20px}
+.status-item{display:flex;align-items:baseline;gap:10px;font-size:12px}
+.status-code{font-weight:500;flex-shrink:0;width:36px}
+.s2xx{color:var(--green)}.s4xx{color:var(--red)}.s5xx{color:var(--orange)}
+.status-msg{color:var(--sub)}
+
+/* ── NOTICE BOXES ── */
+.notice{border-radius:8px;padding:14px 18px;font-size:12px;line-height:1.7;margin:16px 0;border-left:3px solid}
+.notice-warn{background:rgba(255,170,85,.06);border-color:var(--orange);color:var(--sub)}
+.notice-warn strong{color:var(--orange)}
+.notice-info{background:rgba(56,232,200,.06);border-color:var(--cyan);color:var(--sub)}
+.notice-info strong{color:var(--cyan)}
+.notice-danger{background:rgba(255,107,107,.06);border-color:var(--red);color:var(--sub)}
+.notice-danger strong{color:var(--red)}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.doc-section{animation:fadeIn .4s ease both}
+
+/* ── TOC PROGRESS ── */
+.toc-progress{position:fixed;top:0;left:0;height:2px;background:var(--gold);transition:width .1s;z-index:99}
+
+/* ── FOOTER ── */
+.doc-footer{margin-top:80px;padding-top:32px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);display:flex;justify-content:space-between;align-items:center;flex-wrap:gap}
+</style>
+</head>
+<body>
+
+<div class="toc-progress" id="progress"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">
+      <div class="sb-logo-icon">🔐</div>
+      <h1>Auth System</h1>
+    </div>
+    <div class="version-pill">v2.0 — API Reference</div>
+    <input class="search-box" placeholder="Search docs…" id="search-input" oninput="filterNav(this.value)"/>
+  </div>
+
+  <div class="sb-section">Getting Started</div>
+  <a class="sb-link active" href="#intro" onclick="setActive(this)">Introduction</a>
+  <a class="sb-link" href="#quickstart" onclick="setActive(this)">Quick Start</a>
+  <a class="sb-link" href="#config" onclick="setActive(this)">Configuration</a>
+  <a class="sb-link" href="#auth" onclick="setActive(this)">Authentication</a>
+  <a class="sb-link" href="#errors" onclick="setActive(this)">Error Handling</a>
+
+  <div class="sb-section">Endpoints</div>
+  <a class="sb-link" href="#ep-health" onclick="setActive(this)"><span class="method m-get">GET</span> Health Check</a>
+  <a class="sb-link" href="#ep-create-app" onclick="setActive(this)"><span class="method m-post">POST</span> Create App</a>
+  <a class="sb-link" href="#ep-update-version" onclick="setActive(this)"><span class="method m-post">POST</span> Update Version</a>
+  <a class="sb-link" href="#ep-gen-license" onclick="setActive(this)"><span class="method m-post">POST</span> Generate License</a>
+  <a class="sb-link" href="#ep-assign-license" onclick="setActive(this)"><span class="method m-post">POST</span> Assign License</a>
+  <a class="sb-link" href="#ep-verify-license" onclick="setActive(this)"><span class="method m-get">GET</span> Verify License</a>
+  <a class="sb-link" href="#ep-get-license" onclick="setActive(this)"><span class="method m-post">POST</span> Get License</a>
+  <a class="sb-link" href="#ep-ban-license" onclick="setActive(this)"><span class="method m-post">POST</span> Ban License</a>
+  <a class="sb-link" href="#ep-reset-hwid" onclick="setActive(this)"><span class="method m-post">POST</span> Reset HWID</a>
+  <a class="sb-link" href="#ep-update-user" onclick="setActive(this)"><span class="method m-patch">PATCH</span> Update User</a>
+  <a class="sb-link" href="#ep-check" onclick="setActive(this)"><span class="method m-get">GET</span> Stats Check</a>
+  <a class="sb-link" href="#ep-cleanup" onclick="setActive(this)"><span class="method m-post">POST</span> Cleanup</a>
+
+  <div class="sb-section">Integration</div>
+  <a class="sb-link" href="#python-example" onclick="setActive(this)">Python Example</a>
+  <a class="sb-link" href="#ratelimits" onclick="setActive(this)">Rate Limits</a>
+  <a class="sb-link" href="#discord-bot" onclick="setActive(this)">Discord Bot</a>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main" id="main" onscroll="updateProgress()">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag">Documentation</div>
+    <h2>Auth System<br/><em>API Reference</em></h2>
+    <p>A self-hosted license management API. Create apps, generate & verify license keys, enforce HWID locking, and manage users — all over a simple REST interface secured by Bearer token auth.</p>
+    <div class="hero-badges">
+      <span class="hb green">✓ Self-hosted</span>
+      <span class="hb cyan">✓ Bearer Auth</span>
+      <span class="hb gold">✓ HWID Locking</span>
+      <span class="hb">✓ Rate Limited</span>
+      <span class="hb">✓ Atomic Writes</span>
+    </div>
+  </div>
+
+  <!-- INTRO -->
+  <div class="doc-section" id="intro">
+    <div class="section-label">Overview</div>
+    <div class="section-title">Introduction</div>
+    <p class="prose">
+      Auth System is a lightweight Flask-based REST API for managing software licenses. It's designed for tool developers who want to protect their software with license keys, hardware ID locking, and version enforcement — without relying on a third-party service.<br/><br/>
+      The system consists of three components:<br/><br/>
+      <strong>server.py</strong> — The Flask REST API. All license logic lives here.<br/>
+      <strong>bot.py</strong> — An optional Discord bot that wraps every API endpoint in slash commands.<br/>
+      <strong>dashboard.html</strong> — A browser-based admin + user portal with no dependencies beyond the API.
+    </p>
+    <div class="notice notice-info" style="margin-top:20px"><strong>Base URL:</strong> All endpoints are prefixed with <code>/Auth</code>. For example: <code>http://your-server:5000/Auth/create-app</code></div>
+  </div>
+
+  <!-- QUICKSTART -->
+  <div class="doc-section" id="quickstart">
+    <div class="section-label">Getting Started</div>
+    <div class="section-title">Quick <em>Start</em></div>
+    <p class="prose">Get running in under 5 minutes.</p>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-body"><h4>Clone & install</h4><p>Clone the repo and install Python dependencies.</p></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><h4>Configure <code>config.yaml</code></h4><p>Set your <code>authtoken</code>, <code>port</code>, and <code>base_url</code>. This token is the master key for all API calls.</p></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><h4>Start the server</h4><p>Run <code>python server.py</code>. The API is now live at <code>http://0.0.0.0:{port}/Auth</code>.</p></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><h4>Create your first app</h4><p>POST to <code>/Auth/create-app</code> with your app name and version. You'll get back an <code>app_id</code> and <code>app_secret</code> — save these.</p></div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body"><h4>Generate & assign a license</h4><p>Generate keys with <code>/Auth/gen-license</code>, then activate one with <code>/Auth/assign-license</code>.</p></div></div>
+      <div class="step"><div class="step-num">6</div><div class="step-body"><h4>Verify from your tool</h4><p>Call <code>/Auth/verify-license</code> on startup from your software. Pass the license key, app secret, HWID, and version. Done.</p></div></div>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">bash — install</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="cmd">pip install</span> <span class="arg">flask pyyaml pytz tls-client discord.py aiohttp</span></code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">bash — run</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="cmd">python</span> <span class="arg">server.py</span>
+<span class="cm"># Server starts on http://0.0.0.0:5000/Auth</span></code></pre>
+    </div>
+  </div>
+
+  <!-- CONFIG -->
+  <div class="doc-section" id="config">
+    <div class="section-label">Setup</div>
+    <div class="section-title">Configuration</div>
+    <p class="prose">All settings live in <code>config.yaml</code> in the project root.</p>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">yaml — config.yaml</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="key">authtoken</span><span class="punct">:</span> <span class="str">"your-secret-token-here"</span>   <span class="cm"># Master API key</span>
+<span class="key">port</span><span class="punct">:</span>      <span class="num">5000</span>                        <span class="cm"># Server port</span>
+<span class="key">base_url</span><span class="punct">:</span>  <span class="str">"http://localhost:5000/Auth"</span> <span class="cm"># Used by Discord bot</span>
+<span class="key">token</span><span class="punct">:</span>     <span class="str">"your-discord-bot-token"</span>    <span class="cm"># Discord bot token (optional)</span></code></pre>
+    </div>
+    <table class="config-table">
+      <tr><th>Key</th><th>Example</th><th>Description</th></tr>
+      <tr><td>authtoken</td><td>"abc123xyz"</td><td>Required on every API request as <code>Bearer {authtoken}</code></td></tr>
+      <tr><td>port</td><td>5000</td><td>The port the Flask server binds to</td></tr>
+      <tr><td>base_url</td><td>"http://localhost:5000/Auth"</td><td>Full base URL the Discord bot uses to reach the server</td></tr>
+      <tr><td>token</td><td>"Bot_Token_Here"</td><td>Discord bot token — only needed if running bot.py</td></tr>
+    </table>
+  </div>
+
+  <!-- AUTH -->
+  <div class="doc-section" id="auth">
+    <div class="section-label">Security</div>
+    <div class="section-title">Authentication</div>
+    <p class="prose">Every endpoint requires a <strong>Bearer token</strong> in the <code>Authorization</code> header. The token is set via <code>authtoken</code> in <code>config.yaml</code>.</p>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">bash — header format</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code>Authorization: Bearer <span class="str">your-secret-token-here</span></code></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">curl — authenticated request</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="cmd">curl</span> <span class="flag">-H</span> <span class="str">"Authorization: Bearer your-token"</span> \
+     <span class="flag">-H</span> <span class="str">"Content-Type: application/json"</span> \
+     <span class="url">http://localhost:5000/Auth/check</span></code></pre>
+    </div>
+    <div class="notice notice-danger"><strong>Keep your token secret.</strong> Anyone with it has full control over all apps and licenses. Never commit it to version control — use environment variables or keep <code>config.yaml</code> in your <code>.gitignore</code>.</div>
+  </div>
+
+  <!-- ERRORS -->
+  <div class="doc-section" id="errors">
+    <div class="section-label">Reference</div>
+    <div class="section-title">Error Handling</div>
+    <p class="prose">All errors return JSON with an <code>"error"</code> key. HTTP status codes follow REST conventions.</p>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">json — error response</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="punct">{</span>
+  <span class="key">"error"</span><span class="punct">:</span> <span class="str">"License not found"</span>
+<span class="punct">}</span></code></pre>
+    </div>
+    <table class="config-table">
+      <tr><th>Code</th><th>Meaning</th><th>Common cause</th></tr>
+      <tr><td style="color:var(--green)">200</td><td>OK</td><td>Request succeeded</td></tr>
+      <tr><td style="color:var(--green)">201</td><td>Created</td><td>Resource created (app, license)</td></tr>
+      <tr><td style="color:var(--red)">400</td><td>Bad Request</td><td>Missing or invalid field</td></tr>
+      <tr><td style="color:var(--red)">401</td><td>Unauthorized</td><td>Wrong token, wrong app secret, license sharing</td></tr>
+      <tr><td style="color:var(--red)">403</td><td>Forbidden</td><td>License expired or HWID mismatch</td></tr>
+      <tr><td style="color:var(--red)">404</td><td>Not Found</td><td>App or license doesn't exist</td></tr>
+      <tr><td style="color:var(--red)">409</td><td>Conflict</td><td>App already exists</td></tr>
+      <tr><td style="color:var(--orange)">426</td><td>Upgrade Required</td><td>Client version is outdated</td></tr>
+      <tr><td style="color:var(--red)">429</td><td>Too Many Requests</td><td>Rate limit exceeded</td></tr>
+      <tr><td style="color:var(--orange)">500</td><td>Server Error</td><td>Corrupted data or unexpected exception</td></tr>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════ ENDPOINTS ═══════════════════════════════ -->
+
+  <!-- HEALTH -->
+  <div class="doc-section endpoint" id="ep-health">
+    <div class="ep-header">
+      <div class="ep-method m-get">GET</div>
+      <div><div class="ep-path">/Auth/health</div><div class="ep-desc">Check server liveness. No auth required.</div></div>
+    </div>
+    <div class="ep-body">
+      <div class="ep-section-title">curl example</div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="cmd">curl</span> <span class="url">http://localhost:5000/Auth/health</span></code></pre></div>
+      <div class="ep-section-title">Response <span style="color:var(--green)">200</span></div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">json</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="punct">{</span> <span class="key">"status"</span><span class="punct">:</span> <span class="str">"ok"</span><span class="punct">,</span> <span class="key">"ts"</span><span class="punct">:</span> <span class="str">"2025-04-11T12:00:00"</span> <span class="punct">}</span></code></pre></div>
+    </div>
+  </div>
+
+  <!-- CREATE APP -->
+  <div class="doc-section endpoint" id="ep-create-app">
+    <div class="ep-header">
+      <div class="ep-method m-post">POST</div>
+      <div><div class="ep-path">/Auth/create-app</div><div class="ep-desc">Register a new application. Returns the app secret you'll need for license verification.</div></div>
+    </div>
+    <div class="ep-body">
+      <div class="ep-section-title">Request body</div>
+      <table class="params-table">
+        <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+        <tr><td class="param-name">app_name</td><td class="param-type">string</td><td><span class="param-req req">required</span></td><td class="param-desc">Alphanumeric app name. Used as the folder name and license prefix.</td></tr>
+        <tr><td class="param-name">version</td><td class="param-type">string</td><td><span class="param-req opt">optional</span></td><td class="param-desc">Semantic version string, e.g. <code>"1.0.0"</code></td></tr>
+        <tr><td class="param-name">link</td><td class="param-type">string</td><td><span class="param-req opt">optional</span></td><td class="param-desc">Download URL shown to users on outdated version</td></tr>
+      </table>
+      <div class="ep-section-title">curl example</div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="cmd">curl</span> <span class="flag">-X</span> POST <span class="url">http://localhost:5000/Auth/create-app</span> \
+  <span class="flag">-H</span> <span class="str">"Authorization: Bearer your-token"</span> \
+  <span class="flag">-H</span> <span class="str">"Content-Type: application/json"</span> \
+  <span class="flag">-d</span> <span class="str">'{
+    "app_name": "MyTool",
+    "version":  "1.0.0",
+    "link":     "https://example.com/download"
+  }'</span></code></pre></div>
+      <div class="ep-section-title">Response <span style="color:var(--green)">201</span></div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">json</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="punct">{</span>
+  <span class="key">"app_name"</span><span class="punct">:</span>   <span class="str">"MyTool"</span><span class="punct">,</span>
+  <span class="key">"app_id"</span><span class="punct">:</span>     <span class="str">"38271946"</span><span class="punct">,</span>
+  <span class="key">"app_secret"</span><span class="punct">:</span> <span class="str">"aB3dEf7hIj2kLmNo"</span><span class="punct">,</span>  <span class="cm">// save this!</span>
+  <span class="key">"version"</span><span class="punct">:</span>    <span class="str">"1.0.0"</span><span class="punct">,</span>
+  <span class="key">"link"</span><span class="punct">:</span>       <span class="str">"https://example.com/download"</span><span class="punct">,</span>
+  <span class="key">"created_at"</span><span class="punct">:</span> <span class="str">"2025-04-11T12:00:00"</span>
+<span class="punct">}</span></code></pre></div>
+      <div class="status-list">
+        <div class="status-item"><span class="status-code s2xx">201</span><span class="status-msg">App created successfully</span></div>
+        <div class="status-item"><span class="status-code s4xx">400</span><span class="status-msg">Missing or invalid <code>app_name</code></span></div>
+        <div class="status-item"><span class="status-code s4xx">401</span><span class="status-msg">Invalid bearer token</span></div>
+        <div class="status-item"><span class="status-code s4xx">409</span><span class="status-msg">App with that name already exists</span></div>
+      </div>
+      <div class="notice notice-warn"><strong>Save your app_secret.</strong> It's only returned on creation. You'll need it to verify licenses from your tool.</div>
+    </div>
+  </div>
+
+  <!-- UPDATE VERSION -->
+  <div class="doc-section endpoint" id="ep-update-version">
+    <div class="ep-header">
+      <div class="ep-method m-post">POST</div>
+      <div><div class="ep-path">/Auth/update-version</div><div class="ep-desc">Update an app's version number and download link. Existing users on old versions will be shown the new link.</div></div>
+    </div>
+    <div class="ep-body">
+      <div class="ep-section-title">curl example</div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="cmd">curl</span> <span class="flag">-X</span> POST <span class="url">http://localhost:5000/Auth/update-version</span> \
+  <span class="flag">-H</span> <span class="str">"Authorization: Bearer your-token"</span> \
+  <span class="flag">-H</span> <span class="str">"Content-Type: application/json"</span> \
+  <span class="flag">-d</span> <span class="str">'{"app_name":"MyTool","version":"1.1.0","link":"https://example.com/v1.1"}'</span></code></pre></div>
+      <div class="status-list">
+        <div class="status-item"><span class="status-code s2xx">200</span><span class="status-msg">Version updated</span></div>
+        <div class="status-item"><span class="status-code s4xx">400</span><span class="status-msg">Missing <code>app_name</code> or <code>version</code></span></div>
+        <div class="status-item"><span class="status-code s4xx">404</span><span class="status-msg">App not found</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GEN LICENSE -->
+  <div class="doc-section endpoint" id="ep-gen-license">
+    <div class="ep-header">
+      <div class="ep-method m-post">POST</div>
+      <div><div class="ep-path">/Auth/gen-license</div><div class="ep-desc">Generate a batch of unused license keys for an app. Keys are stored and ready to assign.</div></div>
+    </div>
+    <div class="ep-body">
+      <div class="ep-section-title">Request body</div>
+      <table class="params-table">
+        <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+        <tr><td class="param-name">app_name</td><td class="param-type">string</td><td><span class="param-req req">required</span></td><td class="param-desc">Target app name</td></tr>
+        <tr><td class="param-name">duration</td><td class="param-type">string</td><td><span class="param-req req">required</span></td><td class="param-desc"><code>"Lifetime"</code> | <code>"Month"</code> | <code>"Week"</code> | <code>"Day"</code></td></tr>
+        <tr><td class="param-name">quantity</td><td class="param-type">integer</td><td><span class="param-req req">required</span></td><td class="param-desc">1–500 keys to generate</td></tr>
+      </table>
+      <div class="ep-section-title">curl example</div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="cmd">curl</span> <span class="flag">-X</span> POST <span class="url">http://localhost:5000/Auth/gen-license</span> \
+  <span class="flag">-H</span> <span class="str">"Authorization: Bearer your-token"</span> \
+  <span class="flag">-H</span> <span class="str">"Content-Type: application/json"</span> \
+  <span class="flag">-d</span> <span class="str">'{"app_name":"MyTool","duration":"Month","quantity":5}'</span></code></pre></div>
+      <div class="ep-section-title">Response <span style="color:var(--green)">201</span></div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">json</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="punct">{</span>
+  <span class="key">"message"</span><span class="punct">:</span> <span class="str">"5 licenses generated"</span><span class="punct">,</span>
+  <span class="key">"keys"</span><span class="punct">:</span> <span class="punct">[</span>
+    <span class="str">"MyTool-M-aB3dEf7h"</span><span class="punct">,</span>
+    <span class="str">"MyTool-M-Xy9zKl2p"</span><span class="punct">,</span>
+    <span class="str">"..."</span>
+  <span class="punct">]</span>
+<span class="punct">}</span></code></pre></div>
+      <div class="notice notice-info"><strong>Key format:</strong> <code>{AppName}-{DurationCode}-{8RandomChars}</code>. Duration codes: <code>L</code>=Lifetime, <code>M</code>=Month, <code>W</code>=Week, <code>D</code>=Day.</div>
+    </div>
+  </div>
+
+  <!-- ASSIGN LICENSE -->
+  <div class="doc-section endpoint" id="ep-assign-license">
+    <div class="ep-header">
+      <div class="ep-method m-post">POST</div>
+      <div><div class="ep-path">/Auth/assign-license</div><div class="ep-desc">Pull one unused key from the pool, activate it with an expiry date, and return it ready to give to a customer.</div></div>
+    </div>
+    <div class="ep-body">
+      <div class="ep-section-title">curl example</div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="cmd">curl</span> <span class="flag">-X</span> POST <span class="url">http://localhost:5000/Auth/assign-license</span> \
+  <span class="flag">-H</span> <span class="str">"Authorization: Bearer your-token"</span> \
+  <span class="flag">-H</span> <span class="str">"Content-Type: application/json"</span> \
+  <span class="flag">-d</span> <span class="str">'{"app_name":"MyTool","duration":"Month"}'</span></code></pre></div>
+      <div class="ep-section-title">Response <span style="color:var(--green)">200</span></div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">json</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="punct">{</span>
+  <span class="key">"license"</span><span class="punct">:</span> <span class="str">"MyTool-M-aB3dEf7h"</span><span class="punct">,</span>
+  <span class="key">"expiry"</span><span class="punct">:</span>  <span class="str">"2025-05-11 12:00:00"</span>
+<span class="punct">}</span></code></pre></div>
+      <div class="status-list">
+        <div class="status-item"><span class="status-code s2xx">200</span><span class="status-msg">License assigned</span></div>
+        <div class="status-item"><span class="status-code s4xx">404</span><span class="status-msg">No unused licenses of that duration available</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VERIFY LICENSE -->
+  <div class="doc-section endpoint" id="ep-verify-license">
+    <div class="ep-header">
+      <div class="ep-method m-get">GET</div>
+      <div><div class="ep-path">/Auth/verify-license</div><div class="ep-desc">The main endpoint called by your tool on startup. Validates the key, checks expiry, enforces HWID lock, and verifies version.</div></div>
+    </div>
+    <div class="ep-body">
+      <div class="ep-section-title">Query parameters</div>
+      <table class="params-table">
+        <tr><th>Param</th><th>Type</th><th>Required</th><th>Description</th></tr>
+        <tr><td class="param-name">license_key</td><td class="param-type">string</td><td><span class="param-req req">required</span></td><td class="param-desc">The customer's license key</td></tr>
+        <tr><td class="param-name">app_name</td><td class="param-type">string</td><td><span class="param-req req">required</span></td><td class="param-desc">Your app's registered name</td></tr>
+        <tr><td class="param-name">app_secret</td><td class="param-type">string</td><td><span class="param-req req">required</span></td><td class="param-desc">The secret returned when you created the app</td></tr>
+        <tr><td class="param-name">hwid</td><td class="param-type">string</td><td><span class="param-req req">required</span></td><td class="param-desc">Hardware ID of the user's machine</td></tr>
+        <tr><td class="param-name">version</td><td class="param-type">string</td><td><span class="param-req req">required</span></td><td class="param-desc">Your tool's current version string</td></tr>
+      </table>
+      <div class="ep-section-title">curl example</div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="cmd">curl</span> <span class="str">"http://localhost:5000/Auth/verify-license\
+?license_key=MyTool-M-aB3dEf7h\
+&app_name=MyTool\
+&app_secret=aB3dEf7hIj2kLmNo\
+&hwid=CPU-ABCD-1234\
+&version=1.0.0"</span> \
+  <span class="flag">-H</span> <span class="str">"Authorization: Bearer your-token"</span></code></pre></div>
+      <div class="ep-section-title">Response <span style="color:var(--green)">200</span></div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">json</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="punct">{</span>
+  <span class="key">"message"</span><span class="punct">:</span> <span class="str">"License valid"</span><span class="punct">,</span>
+  <span class="key">"expiry"</span><span class="punct">:</span>  <span class="str">"2025-05-11 12:00:00"</span><span class="punct">,</span>
+  <span class="key">"hwid"</span><span class="punct">:</span>    <span class="str">"CPU-ABCD-1234"</span>
+<span class="punct">}</span></code></pre></div>
+      <div class="status-list">
+        <div class="status-item"><span class="status-code s2xx">200</span><span class="status-msg">License valid — proceed</span></div>
+        <div class="status-item"><span class="status-code s4xx">401</span><span class="status-msg">Wrong <code>app_secret</code></span></div>
+        <div class="status-item"><span class="status-code s4xx">403</span><span class="status-msg">License expired or HWID doesn't match</span></div>
+        <div class="status-item"><span class="status-code s4xx">426</span><span class="status-msg">Version outdated — response includes <code>"link"</code> to update</span></div>
+      </div>
+      <div class="notice notice-info"><strong>HWID binding:</strong> The first call with a new license automatically binds the machine's HWID. All subsequent calls must match. Admins can reset it via <code>/reset-hwid</code>.</div>
+    </div>
+  </div>
+
+  <!-- GET LICENSE -->
+  <div class="doc-section endpoint" id="ep-get-license">
+    <div class="ep-header">
+      <div class="ep-method m-post">POST</div>
+      <div><div class="ep-path">/Auth/get-license</div><div class="ep-desc">Fetch full details about a specific license key — expiry, HWID, assigned user, validity.</div></div>
+    </div>
+    <div class="ep-body">
+      <div class="ep-section-title">curl example</div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="cmd">curl</span> <span class="flag">-X</span> POST <span class="url">http://localhost:5000/Auth/get-license</span> \
+  <span class="flag">-H</span> <span class="str">"Authorization: Bearer your-token"</span> \
+  <span class="flag">-H</span> <span class="str">"Content-Type: application/json"</span> \
+  <span class="flag">-d</span> <span class="str">'{"license_key":"MyTool-M-aB3dEf7h"}'</span></code></pre></div>
+      <div class="ep-section-title">Response <span style="color:var(--green)">200</span></div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">json</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="punct">{</span>
+  <span class="key">"license_key"</span><span class="punct">:</span>  <span class="str">"MyTool-M-aB3dEf7h"</span><span class="punct">,</span>
+  <span class="key">"app_name"</span><span class="punct">:</span>     <span class="str">"MyTool"</span><span class="punct">,</span>
+  <span class="key">"user"</span><span class="punct">:</span>         <span class="str">"123456789"</span><span class="punct">,</span>
+  <span class="key">"hwid"</span><span class="punct">:</span>         <span class="str">"CPU-ABCD-1234"</span><span class="punct">,</span>
+  <span class="key">"expiry_date"</span><span class="punct">:</span>  <span class="str">"2025-05-11 12:00:00"</span><span class="punct">,</span>
+  <span class="key">"valid"</span><span class="punct">:</span>        <span class="kw">true</span>
+<span class="punct">}</span></code></pre></div>
+    </div>
+  </div>
+
+  <!-- BAN LICENSE -->
+  <div class="doc-section endpoint" id="ep-ban-license">
+    <div class="ep-header">
+      <div class="ep-method m-post">POST</div>
+      <div><div class="ep-path">/Auth/ban-license</div><div class="ep-desc">Permanently remove a license. The key is deleted from active licenses — it cannot be recovered.</div></div>
+    </div>
+    <div class="ep-body">
+      <div class="ep-section-title">curl example</div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="cmd">curl</span> <span class="flag">-X</span> POST <span class="url">http://localhost:5000/Auth/ban-license</span> \
+  <span class="flag">-H</span> <span class="str">"Authorization: Bearer your-token"</span> \
+  <span class="flag">-H</span> <span class="str">"Content-Type: application/json"</span> \
+  <span class="flag">-d</span> <span class="str">'{"license_key":"MyTool-M-aB3dEf7h"}'</span></code></pre></div>
+      <div class="notice notice-danger"><strong>Irreversible.</strong> There is no undo. The key is deleted — the customer will need a new license if banned by mistake.</div>
+    </div>
+  </div>
+
+  <!-- RESET HWID -->
+  <div class="doc-section endpoint" id="ep-reset-hwid">
+    <div class="ep-header">
+      <div class="ep-method m-post">POST</div>
+      <div><div class="ep-path">/Auth/reset-hwid</div><div class="ep-desc">Clear the hardware ID binding on a license. The user's HWID will be re-captured on their next verification call. If the user doesn't match the stored user, license sharing is detected and the license is auto-banned.</div></div>
+    </div>
+    <div class="ep-body">
+      <div class="ep-section-title">curl example</div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="cmd">curl</span> <span class="flag">-X</span> POST <span class="url">http://localhost:5000/Auth/reset-hwid</span> \
+  <span class="flag">-H</span> <span class="str">"Authorization: Bearer your-token"</span> \
+  <span class="flag">-H</span> <span class="str">"Content-Type: application/json"</span> \
+  <span class="flag">-d</span> <span class="str">'{"license_key":"MyTool-M-aB3dEf7h","user":"123456789"}'</span></code></pre></div>
+      <div class="status-list">
+        <div class="status-item"><span class="status-code s2xx">200</span><span class="status-msg">HWID reset — will re-bind on next verify call</span></div>
+        <div class="status-item"><span class="status-code s4xx">403</span><span class="status-msg">User mismatch detected — license sharing — license auto-banned</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- UPDATE USER -->
+  <div class="doc-section endpoint" id="ep-update-user">
+    <div class="ep-header">
+      <div class="ep-method m-patch">PATCH</div>
+      <div><div class="ep-path">/Auth/update-user</div><div class="ep-desc">Assign or transfer a license to a different user ID (e.g. Discord ID).</div></div>
+    </div>
+    <div class="ep-body">
+      <div class="ep-section-title">curl example</div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="cmd">curl</span> <span class="flag">-X</span> PATCH <span class="url">http://localhost:5000/Auth/update-user</span> \
+  <span class="flag">-H</span> <span class="str">"Authorization: Bearer your-token"</span> \
+  <span class="flag">-H</span> <span class="str">"Content-Type: application/json"</span> \
+  <span class="flag">-d</span> <span class="str">'{"license_key":"MyTool-M-aB3dEf7h","user":"987654321"}'</span></code></pre></div>
+    </div>
+  </div>
+
+  <!-- CHECK -->
+  <div class="doc-section endpoint" id="ep-check">
+    <div class="ep-header">
+      <div class="ep-method m-get">GET</div>
+      <div><div class="ep-path">/Auth/check</div><div class="ep-desc">Get system-wide stats — total app count and active license count across all apps.</div></div>
+    </div>
+    <div class="ep-body">
+      <div class="ep-section-title">curl example</div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="cmd">curl</span> <span class="url">http://localhost:5000/Auth/check</span> \
+  <span class="flag">-H</span> <span class="str">"Authorization: Bearer your-token"</span></code></pre></div>
+      <div class="ep-section-title">Response <span style="color:var(--green)">200</span></div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">json</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="punct">{</span> <span class="key">"total_apps"</span><span class="punct">:</span> <span class="num">3</span><span class="punct">,</span> <span class="key">"total_licenses"</span><span class="punct">:</span> <span class="num">47</span> <span class="punct">}</span></code></pre></div>
+    </div>
+  </div>
+
+  <!-- CLEANUP -->
+  <div class="doc-section endpoint" id="ep-cleanup">
+    <div class="ep-header">
+      <div class="ep-method m-post">POST</div>
+      <div><div class="ep-path">/Auth/cleanup</div><div class="ep-desc">Scan all apps and delete every expired license. Safe to run anytime — does not touch active or Lifetime licenses.</div></div>
+    </div>
+    <div class="ep-body">
+      <div class="ep-section-title">curl example</div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="cmd">curl</span> <span class="flag">-X</span> POST <span class="url">http://localhost:5000/Auth/cleanup</span> \
+  <span class="flag">-H</span> <span class="str">"Authorization: Bearer your-token"</span></code></pre></div>
+      <div class="ep-section-title">Response <span style="color:var(--green)">200</span></div>
+      <div class="code-block"><div class="code-header"><span class="code-lang">json</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="punct">{</span> <span class="key">"message"</span><span class="punct">:</span> <span class="str">"Removed 12 expired licenses"</span> <span class="punct">}</span></code></pre></div>
+    </div>
+  </div>
+
+  <!-- PYTHON EXAMPLE -->
+  <div class="doc-section" id="python-example">
+    <div class="section-label">Integration</div>
+    <div class="section-title">Python <em>Example</em></div>
+    <p class="prose">Paste this into your tool's startup code. It calls <code>verify-license</code> and exits if the key is invalid, expired, or the version is outdated.</p>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">python — verify on startup</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code><span class="kw">import</span> sys, uuid, requests
+
+<span class="cm"># ── Config ────────────────────────────────────────</span>
+SERVER     = <span class="str">"http://your-server:5000/Auth"</span>
+APP_NAME   = <span class="str">"MyTool"</span>
+APP_SECRET = <span class="str">"aB3dEf7hIj2kLmNo"</span>  <span class="cm"># from create-app</span>
+VERSION    = <span class="str">"1.0.0"</span>
+API_TOKEN  = <span class="str">"your-bearer-token"</span>
+
+<span class="kw">def</span> <span class="cmd">get_hwid</span>() -> str:
+    <span class="kw">return</span> str(uuid.UUID(int=uuid.getnode()))
+
+<span class="kw">def</span> <span class="cmd">verify_license</span>(license_key: str) -> <span class="kw">bool</span>:
+    <span class="kw">try</span>:
+        r = requests.get(
+            f<span class="str">"{SERVER}/verify-license"</span>,
+            params={
+                <span class="str">"license_key"</span>: license_key,
+                <span class="str">"app_name"</span>:    APP_NAME,
+                <span class="str">"app_secret"</span>:  APP_SECRET,
+                <span class="str">"hwid"</span>:        get_hwid(),
+                <span class="str">"version"</span>:     VERSION,
+            },
+            headers={<span class="str">"Authorization"</span>: f<span class="str">"Bearer {API_TOKEN}"</span>},
+            timeout=<span class="num">10</span>,
+        )
+        <span class="kw">if</span> r.status_code == <span class="num">200</span>:
+            data = r.json()
+            print(f<span class="str">"✓ License valid — expires {data['expiry']}"</span>)
+            <span class="kw">return True</span>
+        <span class="kw">elif</span> r.status_code == <span class="num">426</span>:
+            link = r.json().get(<span class="str">"link"</span>, <span class="str">"unknown"</span>)
+            print(f<span class="str">"✗ Outdated version. Download: {link}"</span>)
+        <span class="kw">elif</span> r.status_code == <span class="num">403</span>:
+            print(<span class="str">"✗"</span>, r.json().get(<span class="str">"error"</span>))
+        <span class="kw">else</span>:
+            print(<span class="str">"✗"</span>, r.json().get(<span class="str">"error"</span>, <span class="str">"Unknown error"</span>))
+    <span class="kw">except</span> requests.RequestException <span class="kw">as</span> e:
+        print(f<span class="str">"✗ Could not reach license server: {e}"</span>)
+    <span class="kw">return False</span>
+
+<span class="cm"># ── Startup check ─────────────────────────────────</span>
+key = input(<span class="str">"Enter license key: "</span>).strip()
+<span class="kw">if not</span> verify_license(key):
+    sys.exit(<span class="num">1</span>)</code></pre>
+    </div>
+  </div>
+
+  <!-- RATE LIMITS -->
+  <div class="doc-section" id="ratelimits">
+    <div class="section-label">Reference</div>
+    <div class="section-title">Rate <em>Limits</em></div>
+    <p class="prose">Limits are enforced per IP address over a rolling 60-second window.</p>
+    <table class="config-table">
+      <tr><th>Endpoint</th><th>Limit</th><th>Window</th></tr>
+      <tr><td>/verify-license</td><td>60 requests</td><td>60 seconds</td></tr>
+      <tr><td>/get-license</td><td>30 requests</td><td>60 seconds</td></tr>
+      <tr><td>/assign-license, /update-*</td><td>20 requests</td><td>60 seconds</td></tr>
+      <tr><td>/create-app</td><td>20 requests</td><td>60 seconds</td></tr>
+      <tr><td>/gen-license</td><td>10 requests</td><td>60 seconds</td></tr>
+      <tr><td>/reset-hwid, /cleanup</td><td>10 requests</td><td>60 seconds</td></tr>
+    </table>
+    <div class="notice notice-warn"><strong>429 Too Many Requests</strong> is returned when a limit is hit. The client should back off and retry after 60 seconds.</div>
+  </div>
+
+  <!-- DISCORD BOT -->
+  <div class="doc-section" id="discord-bot">
+    <div class="section-label">Reference</div>
+    <div class="section-title">Discord <em>Bot</em></div>
+    <p class="prose">Every API endpoint has a matching Discord slash command. Run <code>python bot.py</code> alongside the server to enable them.</p>
+    <table class="config-table">
+      <tr><th>Command</th><th>Maps to</th><th>Who can use</th></tr>
+      <tr><td>/create_app</td><td>POST /create-app</td><td>Admin</td></tr>
+      <tr><td>/generate_license</td><td>POST /gen-license</td><td>Admin</td></tr>
+      <tr><td>/assign_license</td><td>POST /assign-license</td><td>Admin</td></tr>
+      <tr><td>/get_license</td><td>POST /get-license</td><td>Everyone</td></tr>
+      <tr><td>/update_app</td><td>POST /update-version</td><td>Admin</td></tr>
+      <tr><td>/ban_license</td><td>POST /ban-license</td><td>Admin</td></tr>
+      <tr><td>/reset_hwid</td><td>POST /reset-hwid</td><td>Admin</td></tr>
+      <tr><td>/cleanup_licenses</td><td>POST /cleanup</td><td>Admin</td></tr>
+      <tr><td>/deploy_hwid_panel</td><td>Posts self-service panel</td><td>Admin</td></tr>
+      <tr><td>/deploy_role_panel</td><td>Posts role claim panel</td><td>Admin</td></tr>
+      <tr><td>/status</td><td>Starts live stats monitor</td><td>Admin</td></tr>
+    </table>
+    <div class="notice notice-info"><strong>All bot commands are ephemeral</strong> — responses are only visible to the person who ran the command.</div>
+  </div>
+
+  <div class="doc-footer">
+    <span>Auth System — v2.0 API Reference</span>
+    <span style="color:var(--muted)">Built with Flask · Self-hosted · MIT License</span>
+  </div>
+
+</main>
+
+<script>
+function setActive(el){
+  document.querySelectorAll('.sb-link').forEach(l=>l.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function copyCode(btn){
+  const pre=btn.closest('.code-block').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(()=>{
+    btn.textContent='Copied!';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+  });
+}
+
+function updateProgress(){
+  const m=document.getElementById('main');
+  const pct=m.scrollTop/(m.scrollHeight-m.clientHeight)*100;
+  document.getElementById('progress').style.width=pct+'%';
+}
+
+function filterNav(q){
+  const term=q.toLowerCase();
+  document.querySelectorAll('.sb-link').forEach(l=>{
+    l.style.display=l.textContent.toLowerCase().includes(term)?'':'none';
+  });
+}
+
+// Intersection observer to auto-highlight nav
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const id=e.target.id;
+      const link=document.querySelector(`.sb-link[href="#${id}"]`);
+      if(link){document.querySelectorAll('.sb-link').forEach(l=>l.classList.remove('active'));link.classList.add('active');}
+    }
+  });
+},{rootMargin:'-20% 0px -70% 0px'});
+document.querySelectorAll('.doc-section[id]').forEach(s=>observer.observe(s));
+</script>
+</body>
+</html>

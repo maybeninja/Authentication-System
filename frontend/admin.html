@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Auth Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Clash+Display:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#070710;
+  --surface:#0d0d1a;
+  --card:#111125;
+  --card2:#14142a;
+  --border:#1c1c35;
+  --border2:#242440;
+  --accent:#818cf8;
+  --accent-dim:rgba(129,140,248,0.15);
+  --accent-glow:rgba(129,140,248,0.3);
+  --accent2:#fb7185;
+  --accent3:#34d399;
+  --accent4:#fbbf24;
+  --text:#eef0ff;
+  --text2:#a0a3c4;
+  --muted:#4a4a6a;
+  --danger:#f87171;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'Clash Display','Cabinet Grotesk',system-ui,sans-serif;
+  --r:14px;
+  --t:0.18s cubic-bezier(0.4,0,0.2,1);
+}
+[data-theme="light"]{
+  --bg:#f0f0ff;
+  --surface:#ffffff;
+  --card:#fafaff;
+  --card2:#f5f5ff;
+  --border:#e2e2f5;
+  --border2:#d5d5ee;
+  --text:#0f0f2a;
+  --text2:#555580;
+  --muted:#aaaacc;
+}
+
+html,body{height:100%;overflow:hidden}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:var(--sans);
+  display:flex;transition:background var(--t),color var(--t);
+}
+
+/* ─── LOGIN SCREEN ─── */
+#login-screen{
+  position:fixed;inset:0;z-index:1000;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:0;
+}
+#login-screen::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 60% at 50% 40%,rgba(129,140,248,0.12) 0%,transparent 70%);
+  pointer-events:none;
+}
+.login-box{
+  background:var(--card);border:1px solid var(--border2);
+  border-radius:24px;padding:48px;width:380px;
+  position:relative;z-index:1;
+  animation:popIn .4s cubic-bezier(0.16,1,0.3,1) both;
+}
+@keyframes popIn{from{opacity:0;transform:scale(.9) translateY(20px)}to{opacity:1;transform:none}}
+.login-logo{
+  width:56px;height:56px;border-radius:16px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;margin:0 auto 24px;
+  box-shadow:0 0 32px var(--accent-glow);
+}
+.login-box h2{text-align:center;font-size:22px;font-weight:700;margin-bottom:6px}
+.login-box p{text-align:center;font-size:13px;color:var(--text2);margin-bottom:28px}
+.login-field label{font-size:10px;font-family:var(--mono);letter-spacing:.1em;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:7px}
+.login-field input{
+  width:100%;background:var(--surface);border:1.5px solid var(--border2);
+  border-radius:10px;padding:12px 14px;font-size:13px;font-family:var(--mono);
+  color:var(--text);outline:none;transition:all var(--t);
+}
+.login-field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+.login-field{margin-bottom:14px}
+.login-url{display:flex;gap:8px;margin-bottom:14px}
+.login-url input{flex:1;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:12px;font-family:var(--mono);color:var(--text2);outline:none}
+.login-url label{font-size:10px;font-family:var(--mono);letter-spacing:.1em;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:7px;white-space:nowrap}
+.btn-login{
+  width:100%;padding:13px;border-radius:10px;border:none;
+  background:linear-gradient(135deg,var(--accent),#6366f1);color:#fff;
+  font-size:14px;font-weight:700;font-family:var(--sans);cursor:pointer;
+  transition:all var(--t);box-shadow:0 4px 20px var(--accent-glow);
+  margin-top:4px;
+}
+.btn-login:hover{opacity:.88;transform:translateY(-1px)}
+.login-err{font-size:12px;font-family:var(--mono);color:var(--danger);text-align:center;margin-top:12px;min-height:18px}
+
+/* ─── LAYOUT ─── */
+#app{display:flex;height:100vh;width:100%;opacity:0;transition:opacity .3s}
+#app.visible{opacity:1}
+
+/* ─── SIDEBAR ─── */
+.sidebar{
+  width:230px;flex-shrink:0;
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.sb-brand{
+  padding:24px 20px 20px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+}
+.sb-icon{
+  width:34px;height:34px;border-radius:10px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;
+}
+.sb-title{font-size:14px;font-weight:700;letter-spacing:-.01em}
+.sb-sub{font-size:10px;font-family:var(--mono);color:var(--muted)}
+
+/* App switcher */
+.app-switcher{
+  padding:12px 14px;border-bottom:1px solid var(--border);
+}
+.app-switcher-label{font-size:9px;font-family:var(--mono);letter-spacing:.12em;color:var(--muted);text-transform:uppercase;margin-bottom:7px}
+.app-select{
+  width:100%;background:var(--card);border:1px solid var(--border2);
+  border-radius:8px;padding:8px 10px;font-size:12px;font-family:var(--mono);
+  color:var(--text);outline:none;cursor:pointer;
+  transition:border-color var(--t);
+}
+.app-select:focus{border-color:var(--accent)}
+
+nav{flex:1;overflow-y:auto;padding:10px 0}
+.nav-group{padding:0 12px;margin-top:10px}
+.nav-group-label{font-size:9px;font-family:var(--mono);letter-spacing:.12em;color:var(--muted);text-transform:uppercase;padding:4px 8px 6px;display:block}
+.nav-item{
+  display:flex;align-items:center;gap:9px;
+  padding:8px 10px;border-radius:9px;
+  font-size:13px;font-weight:600;color:var(--text2);
+  cursor:pointer;transition:all var(--t);user-select:none;
+}
+.nav-item:hover{color:var(--text);background:var(--card)}
+.nav-item.active{color:var(--accent);background:var(--accent-dim)}
+.nav-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.nav-badge{
+  margin-left:auto;font-size:10px;font-family:var(--mono);
+  background:var(--card2);border:1px solid var(--border2);
+  border-radius:6px;padding:1px 6px;color:var(--muted);
+}
+
+.sb-footer{
+  padding:14px;border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;
+}
+.sb-footer-avatar{
+  width:30px;height:30px;border-radius:8px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+}
+.sb-footer-info{flex:1;min-width:0}
+.sb-footer-name{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-footer-role{font-size:10px;font-family:var(--mono);color:var(--muted)}
+.sb-footer-btn{background:none;border:none;cursor:pointer;font-size:16px;color:var(--muted);padding:4px;border-radius:6px;transition:all var(--t)}
+.sb-footer-btn:hover{color:var(--text);background:var(--card)}
+
+/* ─── MAIN ─── */
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.topbar{
+  padding:16px 28px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:16px;
+  position:sticky;top:0;z-index:50;flex-shrink:0;
+}
+.topbar h2{font-size:18px;font-weight:700;flex:1}
+.topbar-actions{display:flex;align-items:center;gap:8px}
+
+.theme-btn,.logout-btn{
+  width:34px;height:34px;border-radius:9px;border:1px solid var(--border2);
+  background:var(--card);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:16px;transition:all var(--t);color:var(--text);
+}
+.theme-btn:hover,.logout-btn:hover{border-color:var(--accent);background:var(--accent-dim)}
+
+.content{padding:24px 28px;flex:1}
+
+/* ─── SECTIONS ─── */
+.section{display:none}
+.section.active{display:block;animation:fadeIn .25s ease both}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ─── STAT CARDS ─── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.stat-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:18px 20px;
+  position:relative;overflow:hidden;transition:border-color var(--t);
+}
+.stat-card:hover{border-color:var(--border2)}
+.stat-card::before{
+  content:attr(data-ico);
+  position:absolute;right:14px;bottom:10px;
+  font-size:36px;opacity:.07;
+  transition:opacity var(--t);
+}
+.stat-card:hover::before{opacity:.12}
+.sc-label{font-size:10px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.sc-val{font-size:28px;font-weight:700;line-height:1}
+.sc-val.v1{color:var(--accent)}
+.sc-val.v2{color:var(--accent2)}
+.sc-val.v3{color:var(--accent3)}
+.sc-val.v4{color:var(--accent4)}
+.sc-sub{font-size:10px;font-family:var(--mono);color:var(--muted);margin-top:5px}
+
+/* ─── PANELS ─── */
+.panel-row{display:grid;gap:16px;margin-bottom:16px}
+.panel-row.cols2{grid-template-columns:1fr 1fr}
+.panel-row.cols3{grid-template-columns:1fr 1fr 1fr}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.ph{
+  padding:14px 18px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.ph h3{font-size:13px;font-weight:700}
+.ph .ph-badge{font-size:10px;font-family:var(--mono);color:var(--muted);background:var(--card2);border:1px solid var(--border2);border-radius:6px;padding:2px 7px}
+.pb{padding:18px}
+
+/* ─── FORM ─── */
+.fg{display:grid;gap:12px}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fi label{font-size:10px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px}
+.fi input,.fi select{
+  width:100%;background:var(--surface);border:1.5px solid var(--border2);
+  border-radius:9px;padding:9px 12px;font-size:12px;font-family:var(--mono);
+  color:var(--text);outline:none;transition:all var(--t);
+}
+.fi input:focus,.fi select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+.fi select{cursor:pointer}
+
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:9px 16px;border-radius:9px;border:none;
+  font-size:12px;font-weight:700;font-family:var(--sans);cursor:pointer;
+  transition:all var(--t);
+}
+.btn-sm{padding:6px 12px;font-size:11px}
+.btn-p{background:var(--accent);color:#fff}
+.btn-p:hover{opacity:.85;transform:translateY(-1px)}
+.btn-d{background:rgba(248,113,113,.12);color:var(--danger);border:1px solid rgba(248,113,113,.25)}
+.btn-d:hover{background:rgba(248,113,113,.2)}
+.btn-g{background:var(--card2);color:var(--text2);border:1px solid var(--border2)}
+.btn-g:hover{color:var(--text);border-color:var(--border2)}
+.btn-full{width:100%;justify-content:center}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
+
+/* Response */
+.res-box{
+  margin-top:12px;background:var(--surface);border:1px solid var(--border);
+  border-radius:9px;padding:12px 14px;font-family:var(--mono);font-size:11px;
+  line-height:1.7;max-height:140px;overflow-y:auto;white-space:pre-wrap;
+  display:none;
+}
+.res-box.show{display:block}
+.res-box.ok{border-color:rgba(52,211,153,.3);color:var(--accent3)}
+.res-box.err{border-color:rgba(248,113,113,.3);color:var(--danger)}
+
+/* ─── TABLE ─── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{
+  text-align:left;padding:9px 14px;
+  font-size:9px;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;
+}
+tbody td{
+  padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.03);
+  font-family:var(--mono);color:var(--text2);
+}
+[data-theme="light"] tbody td{border-bottom:1px solid rgba(0,0,0,.04)}
+tbody tr:hover td{background:var(--card2);color:var(--text)}
+tbody tr:last-child td{border-bottom:none}
+
+/* ─── BADGES ─── */
+.pill{
+  display:inline-block;padding:2px 8px;border-radius:100px;
+  font-size:10px;font-weight:700;font-family:var(--mono);
+}
+.pill-ok{background:rgba(52,211,153,.12);color:var(--accent3)}
+.pill-err{background:rgba(248,113,113,.12);color:var(--danger)}
+.pill-acc{background:var(--accent-dim);color:var(--accent)}
+.pill-warn{background:rgba(251,191,36,.12);color:var(--accent4)}
+.pill-life{background:rgba(251,191,36,.08);color:var(--accent4);border:1px solid rgba(251,191,36,.2)}
+
+/* ─── AUDIT LOG ─── */
+.log-wrap{max-height:360px;overflow-y:auto}
+.log-entry{
+  display:flex;gap:12px;align-items:flex-start;
+  padding:10px 14px;border-bottom:1px solid var(--border);
+  font-size:12px;font-family:var(--mono);
+  transition:background var(--t);
+}
+.log-entry:hover{background:var(--card2)}
+.log-entry:last-child{border-bottom:none}
+.log-time{color:var(--muted);white-space:nowrap;flex-shrink:0;font-size:10px;padding-top:1px}
+.log-icon{font-size:14px;flex-shrink:0}
+.log-text{color:var(--text2);line-height:1.5}
+.log-text strong{color:var(--text)}
+.log-empty{padding:32px;text-align:center;color:var(--muted);font-size:13px}
+
+/* ─── CHARTS ─── */
+.chart-container{position:relative;height:200px}
+
+/* ─── SPINNER ─── */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .5s linear infinite;display:inline-block}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:900px){
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .panel-row.cols3{grid-template-columns:1fr}
+  .panel-row.cols2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ─── LOGIN ─── -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">🛡️</div>
+    <h2>Admin Access</h2>
+    <p>Enter your auth token to continue</p>
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-direction:column">
+      <div class="login-field" style="margin-bottom:0">
+        <label>Server URL</label>
+        <input id="l-url" type="text" value="http://localhost:5000/Auth" placeholder="http://…/Auth"/>
+      </div>
+    </div>
+    <div class="login-field">
+      <label>Auth Token</label>
+      <input id="l-token" type="password" placeholder="Your secret token" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="btn-login" onclick="doLogin()" id="l-btn">Sign In</button>
+    <div class="login-err" id="l-err"></div>
+  </div>
+</div>
+
+<!-- ─── APP ─── -->
+<div id="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-icon">🔐</div>
+      <div>
+        <div class="sb-title">Auth Admin</div>
+        <div class="sb-sub">v2.0</div>
+      </div>
+    </div>
+
+    <!-- App Switcher -->
+    <div class="app-switcher">
+      <div class="app-switcher-label">Active App</div>
+      <select class="app-select" id="app-switcher" onchange="switchApp(this.value)">
+        <option value="">— All Apps —</option>
+      </select>
+    </div>
+
+    <nav>
+      <div class="nav-group">
+        <span class="nav-group-label">Overview</span>
+        <div class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon">📊</span>Dashboard</div>
+        <div class="nav-item" onclick="nav('logs',this)"><span class="nav-icon">📋</span>Audit Log<span class="nav-badge" id="log-count">0</span></div>
+      </div>
+      <div class="nav-group">
+        <span class="nav-group-label">Management</span>
+        <div class="nav-item" onclick="nav('apps',this)"><span class="nav-icon">📦</span>Applications</div>
+        <div class="nav-item" onclick="nav('licenses',this)"><span class="nav-icon">🔑</span>Licenses</div>
+        <div class="nav-item" onclick="nav('hwid',this)"><span class="nav-icon">🖥</span>HWID Tools</div>
+      </div>
+      <div class="nav-group">
+        <span class="nav-group-label">Analytics</span>
+        <div class="nav-item" onclick="nav('analytics',this)"><span class="nav-icon">📈</span>Stats & Charts</div>
+      </div>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="sb-footer-avatar">👤</div>
+      <div class="sb-footer-info">
+        <div class="sb-footer-name">Administrator</div>
+        <div class="sb-footer-role">auth-admin</div>
+      </div>
+      <button class="sb-footer-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <h2 id="topbar-title">Dashboard</h2>
+      <div class="topbar-actions">
+        <button class="btn btn-sm btn-g" onclick="refreshAll()">🔄 Refresh</button>
+        <button class="btn btn-sm btn-d" onclick="doCleanup()">🧹 Cleanup</button>
+        <button class="theme-btn" onclick="toggleTheme()">🌙</button>
+        <button class="logout-btn" onclick="doLogout()" title="Sign out">🚪</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ─── DASHBOARD ─── -->
+      <div class="section active" id="sec-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card" data-ico="📦"><div class="sc-label">Total Apps</div><div class="sc-val v1" id="s-apps">—</div><div class="sc-sub">registered</div></div>
+          <div class="stat-card" data-ico="🔑"><div class="sc-label">Active Licenses</div><div class="sc-val v2" id="s-lic">—</div><div class="sc-sub">across all apps</div></div>
+          <div class="stat-card" data-ico="✅"><div class="sc-label">Server</div><div class="sc-val v3" id="s-status">—</div><div class="sc-sub" id="s-ping">checking…</div></div>
+          <div class="stat-card" data-ico="🧹"><div class="sc-label">Expired Cleaned</div><div class="sc-val v4" id="s-cleaned">0</div><div class="sc-sub">this session</div></div>
+        </div>
+
+        <div class="panel-row cols2">
+          <div class="panel">
+            <div class="ph"><h3>Quick Actions</h3></div>
+            <div class="pb" style="display:grid;gap:8px">
+              <button class="btn btn-p btn-full" onclick="nav('apps',document.querySelector('[onclick*=apps]'))">+ New Application</button>
+              <button class="btn btn-g btn-full" onclick="nav('licenses',document.querySelector('[onclick*=licenses]'))">🔑 Generate Licenses</button>
+              <button class="btn btn-g btn-full" onclick="nav('analytics',document.querySelector('[onclick*=analytics]'))">📈 View Analytics</button>
+              <button class="btn btn-d btn-full" onclick="doCleanup()">🧹 Cleanup Expired Licenses</button>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="ph"><h3>Recent Activity</h3><span class="ph-badge" id="recent-count">0 events</span></div>
+            <div id="dash-log" style="max-height:220px;overflow-y:auto">
+              <div class="log-empty">No activity yet</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── AUDIT LOG ─── -->
+      <div class="section" id="sec-logs">
+        <div class="panel">
+          <div class="ph">
+            <h3>Audit Log</h3>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span class="ph-badge" id="log-count2">0 events</span>
+              <button class="btn btn-sm btn-d" onclick="clearLog()">Clear</button>
+            </div>
+          </div>
+          <div class="log-wrap" id="audit-log">
+            <div class="log-empty">No events logged yet. Actions you take will appear here.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── APPS ─── -->
+      <div class="section" id="sec-apps">
+        <div class="panel-row cols2">
+          <div class="panel">
+            <div class="ph"><h3>Create Application</h3><span class="ph-badge">POST /create-app</span></div>
+            <div class="pb">
+              <div class="fg">
+                <div class="fi"><label>App Name</label><input id="ca-n" type="text" placeholder="MyApp"/></div>
+                <div class="fr">
+                  <div class="fi"><label>Version</label><input id="ca-v" type="text" placeholder="1.0.0"/></div>
+                  <div class="fi"><label>Download Link</label><input id="ca-l" type="url" placeholder="https://…"/></div>
+                </div>
+                <button class="btn btn-p btn-full" onclick="createApp()">Create App</button>
+              </div>
+              <div class="res-box" id="ca-r"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="ph"><h3>Update App Version</h3><span class="ph-badge">POST /update-version</span></div>
+            <div class="pb">
+              <div class="fg">
+                <div class="fi"><label>App Name</label><input id="ua-n" type="text" placeholder="MyApp"/></div>
+                <div class="fr">
+                  <div class="fi"><label>New Version</label><input id="ua-v" type="text" placeholder="1.0.1"/></div>
+                  <div class="fi"><label>New Link</label><input id="ua-l" type="url" placeholder="https://…"/></div>
+                </div>
+                <button class="btn btn-p btn-full" onclick="updateApp()">Update</button>
+              </div>
+              <div class="res-box" id="ua-r"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── LICENSES ─── -->
+      <div class="section" id="sec-licenses">
+        <div class="panel-row cols2">
+          <div class="panel">
+            <div class="ph"><h3>Generate Licenses</h3></div>
+            <div class="pb"><div class="fg">
+              <div class="fi"><label>App Name</label><input id="gl-n" type="text" placeholder="MyApp"/></div>
+              <div class="fr">
+                <div class="fi"><label>Duration</label><select id="gl-d"><option>Lifetime</option><option>Month</option><option>Week</option><option>Day</option></select></div>
+                <div class="fi"><label>Quantity</label><input id="gl-q" type="number" value="1" min="1" max="500"/></div>
+              </div>
+              <button class="btn btn-p btn-full" onclick="genLicense()">Generate</button>
+            </div><div class="res-box" id="gl-r"></div></div>
+          </div>
+          <div class="panel">
+            <div class="ph"><h3>Assign License</h3></div>
+            <div class="pb"><div class="fg">
+              <div class="fi"><label>App Name</label><input id="al-n" type="text" placeholder="MyApp"/></div>
+              <div class="fi"><label>Duration</label><select id="al-d"><option>Lifetime</option><option>Month</option><option>Week</option><option>Day</option></select></div>
+              <button class="btn btn-p btn-full" onclick="assignLic()">Assign</button>
+            </div><div class="res-box" id="al-r"></div></div>
+          </div>
+        </div>
+        <div class="panel-row cols2">
+          <div class="panel">
+            <div class="ph"><h3>Lookup License</h3></div>
+            <div class="pb"><div class="fg">
+              <div class="fi"><label>License Key</label><input id="ll-k" type="text" placeholder="MyApp-M-AbCdEfGh"/></div>
+              <button class="btn btn-g btn-full" onclick="lookupLic()">Lookup</button>
+            </div><div class="res-box" id="ll-r"></div></div>
+          </div>
+          <div class="panel">
+            <div class="ph"><h3>Ban License</h3></div>
+            <div class="pb"><div class="fg">
+              <div class="fi"><label>License Key</label><input id="bl-k" type="text" placeholder="MyApp-M-AbCdEfGh"/></div>
+              <button class="btn btn-d btn-full" onclick="banLic()">🚫 Ban License</button>
+            </div><div class="res-box" id="bl-r"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── HWID ─── -->
+      <div class="section" id="sec-hwid">
+        <div class="panel-row cols2">
+          <div class="panel">
+            <div class="ph"><h3>Reset HWID</h3></div>
+            <div class="pb"><div class="fg">
+              <div class="fi"><label>License Key</label><input id="rh-k" type="text" placeholder="MyApp-M-AbCdEfGh"/></div>
+              <div class="fi"><label>User ID</label><input id="rh-u" type="text" placeholder="Discord user ID"/></div>
+              <button class="btn btn-p btn-full" onclick="resetHWID()">Reset HWID</button>
+            </div><div class="res-box" id="rh-r"></div></div>
+          </div>
+          <div class="panel">
+            <div class="ph"><h3>Update License User</h3></div>
+            <div class="pb"><div class="fg">
+              <div class="fi"><label>License Key</label><input id="uu-k" type="text" placeholder="MyApp-M-AbCdEfGh"/></div>
+              <div class="fi"><label>New User ID</label><input id="uu-u" type="text" placeholder="Discord user ID"/></div>
+              <button class="btn btn-p btn-full" onclick="updateUser()">Update User</button>
+            </div><div class="res-box" id="uu-r"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── ANALYTICS ─── -->
+      <div class="section" id="sec-analytics">
+        <div class="stats-grid" style="margin-bottom:20px">
+          <div class="stat-card" data-ico="📦"><div class="sc-label">Total Apps</div><div class="sc-val v1" id="an-apps">—</div></div>
+          <div class="stat-card" data-ico="🔑"><div class="sc-label">Total Licenses</div><div class="sc-val v2" id="an-lic">—</div></div>
+          <div class="stat-card" data-ico="♾"><div class="sc-label">Lifetime Keys</div><div class="sc-val v4" id="an-life">—</div></div>
+          <div class="stat-card" data-ico="📋"><div class="sc-label">Log Events</div><div class="sc-val v3" id="an-log">0</div></div>
+        </div>
+        <div class="panel-row cols2">
+          <div class="panel">
+            <div class="ph"><h3>Actions by Type</h3></div>
+            <div class="pb"><div class="chart-container"><canvas id="chart-actions"></canvas></div></div>
+          </div>
+          <div class="panel">
+            <div class="ph"><h3>License Distribution</h3></div>
+            <div class="pb"><div class="chart-container"><canvas id="chart-duration"></canvas></div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="ph"><h3>License Usage Stats</h3><span class="ph-badge" id="app-filter-label">All Apps</span></div>
+          <div class="pb">
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>License Key</th><th>App</th><th>Duration</th><th>User</th><th>HWID</th><th>Expiry</th><th>Status</th></tr></thead>
+                <tbody id="lic-table-body"><tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">No licenses loaded. Lookup a license or check the server.</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+/* ─── STATE ─── */
+let BASE = '';
+let TOKEN = '';
+let auditLog = [];
+let licenseData = [];
+let statsData = {apps:0, licenses:0};
+let cleanedCount = 0;
+let actionCounts = {};
+let durationCounts = {Lifetime:0, Month:0, Week:0, Day:0};
+let chartActions = null, chartDuration = null;
+
+/* ─── LOGIN ─── */
+async function doLogin(){
+  const url = document.getElementById('l-url').value.trim();
+  const token = document.getElementById('l-token').value.trim();
+  if(!url||!token){ setErr('Please fill in all fields'); return; }
+
+  const btn = document.getElementById('l-btn');
+  btn.textContent = 'Connecting…'; btn.disabled = true;
+
+  try{
+    const r = await fetch(`${url}/health`,{headers:{'Authorization':`Bearer ${token}`}});
+    if(!r.ok) throw new Error('Invalid token or server error');
+    BASE = url; TOKEN = token;
+    document.getElementById('login-screen').style.display = 'none';
+    const app = document.getElementById('app');
+    app.classList.add('visible');
+    await refreshAll();
+    await loadAppsForSwitcher();
+  } catch(e){
+    setErr(e.message || 'Cannot connect to server');
+    btn.textContent = 'Sign In'; btn.disabled = false;
+  }
+}
+function setErr(msg){ document.getElementById('l-err').textContent = msg; }
+
+function doLogout(){
+  BASE=''; TOKEN='';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('l-token').value='';
+  auditLog=[]; licenseData=[];
+}
+
+/* ─── HEADERS ─── */
+const H = ()=>({'Content-Type':'application/json','Authorization':`Bearer ${TOKEN}`});
+
+/* ─── API ─── */
+async function api(path, opts={}){
+  const r = await fetch(`${BASE}${path}`,{...opts, headers:{...H(),...(opts.headers||{})}});
+  const d = await r.json().catch(()=>({error:'Non-JSON'}));
+  return {ok:r.ok, status:r.status, data:d};
+}
+
+/* ─── NAV ─── */
+const sections = ['dashboard','logs','apps','licenses','hwid','analytics'];
+const titles = {dashboard:'Dashboard',logs:'Audit Log',apps:'Applications',licenses:'Licenses',hwid:'HWID Tools',analytics:'Analytics'};
+function nav(id, el){
+  sections.forEach(s=>document.getElementById(`sec-${s}`).classList.remove('active'));
+  document.getElementById(`sec-${id}`).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.getElementById('topbar-title').textContent = titles[id]||id;
+  if(id==='analytics') buildCharts();
+}
+
+/* ─── THEME ─── */
+function toggleTheme(){
+  const h = document.documentElement;
+  const isDark = h.getAttribute('data-theme')==='dark';
+  h.setAttribute('data-theme', isDark?'light':'dark');
+  document.querySelectorAll('.theme-btn,.sb-footer-btn').forEach(b=>b.textContent=isDark?'🌑':'🌙');
+  if(chartActions) buildCharts();
+}
+
+/* ─── AUDIT LOG ─── */
+function addLog(icon, text, type='info'){
+  const entry = {icon, text, time: new Date(), type};
+  auditLog.unshift(entry);
+  if(auditLog.length>200) auditLog.pop();
+
+  const key = text.split(' ')[0];
+  actionCounts[key] = (actionCounts[key]||0)+1;
+
+  renderLog();
+  updateLogBadge();
+  document.getElementById('an-log').textContent = auditLog.length;
+}
+function renderLog(){
+  const container = document.getElementById('audit-log');
+  const dashLog = document.getElementById('dash-log');
+  if(!auditLog.length){
+    container.innerHTML = '<div class="log-empty">No events logged yet.</div>';
+    dashLog.innerHTML = '<div class="log-empty">No activity yet</div>';
+    return;
+  }
+  const html = auditLog.map(e=>`
+    <div class="log-entry">
+      <span class="log-time">${e.time.toLocaleTimeString()}</span>
+      <span class="log-icon">${e.icon}</span>
+      <span class="log-text">${e.text}</span>
+    </div>`).join('');
+  container.innerHTML = html;
+  dashLog.innerHTML = auditLog.slice(0,8).map(e=>`
+    <div class="log-entry">
+      <span class="log-time">${e.time.toLocaleTimeString()}</span>
+      <span class="log-icon">${e.icon}</span>
+      <span class="log-text">${e.text}</span>
+    </div>`).join('');
+}
+function updateLogBadge(){
+  const c = auditLog.length;
+  document.getElementById('log-count').textContent = c;
+  document.getElementById('log-count2').textContent = `${c} events`;
+  document.getElementById('recent-count').textContent = `${Math.min(c,8)} events`;
+}
+function clearLog(){ auditLog=[]; actionCounts={}; renderLog(); updateLogBadge(); }
+
+/* ─── STATS ─── */
+async function refreshAll(){
+  const start = Date.now();
+  try{
+    const {ok, data} = await api('/check');
+    if(ok){
+      statsData = {apps:data.total_apps, licenses:data.total_licenses};
+      document.getElementById('s-apps').textContent = data.total_apps;
+      document.getElementById('s-lic').textContent = data.total_licenses;
+      document.getElementById('an-apps').textContent = data.total_apps;
+      document.getElementById('an-lic').textContent = data.total_licenses;
+      document.getElementById('s-status').textContent = 'Online';
+      document.getElementById('s-ping').textContent = `${Date.now()-start}ms ping`;
+      addLog('📊','Stats refreshed — '+data.total_apps+' apps, '+data.total_licenses+' licenses');
+    }
+  } catch{ document.getElementById('s-status').textContent = 'Offline'; }
+}
+
+async function loadAppsForSwitcher(){
+  // We don't have a list-apps endpoint, so populate from stats only
+  // Real implementation would call an /apps endpoint
+  document.getElementById('app-switcher').innerHTML = '<option value="">— All Apps —</option>';
+}
+
+function switchApp(val){
+  document.getElementById('app-filter-label').textContent = val||'All Apps';
+}
+
+/* ─── RESPONSE HELPER ─── */
+function showRes(id, data, ok){
+  const el = document.getElementById(id);
+  el.textContent = JSON.stringify(data,null,2);
+  el.className = `res-box show ${ok?'ok':'err'}`;
+}
+
+/* ─── APP OPS ─── */
+async function createApp(){
+  const n=document.getElementById('ca-n').value,v=document.getElementById('ca-v').value,l=document.getElementById('ca-l').value;
+  const {ok,data} = await api('/create-app',{method:'POST',body:JSON.stringify({app_name:n,version:v,link:l})});
+  showRes('ca-r',data,ok);
+  if(ok){ addLog('📦',`Created app <strong>${n}</strong> v${v}`,'create'); }
+  else { addLog('❌',`Failed to create app: ${data.error}`,'error'); }
+}
+async function updateApp(){
+  const n=document.getElementById('ua-n').value,v=document.getElementById('ua-v').value,l=document.getElementById('ua-l').value;
+  const {ok,data} = await api('/update-version',{method:'POST',body:JSON.stringify({app_name:n,version:v,link:l})});
+  showRes('ua-r',data,ok);
+  if(ok) addLog('🚀',`Updated <strong>${n}</strong> to v${v}`);
+  else addLog('❌',`Update failed: ${data.error}`,'error');
+}
+
+/* ─── LICENSE OPS ─── */
+async function genLicense(){
+  const n=document.getElementById('gl-n').value,d=document.getElementById('gl-d').value,q=parseInt(document.getElementById('gl-q').value);
+  const {ok,data} = await api('/gen-license',{method:'POST',body:JSON.stringify({app_name:n,duration:d,quantity:q})});
+  showRes('gl-r',data,ok);
+  if(ok){
+    addLog('🔑',`Generated <strong>${q}</strong> ${d} licenses for <strong>${n}</strong>`);
+    durationCounts[d] = (durationCounts[d]||0)+q;
+    if(chartDuration) buildCharts();
+  } else addLog('❌',`License gen failed: ${data.error}`,'error');
+}
+async function assignLic(){
+  const n=document.getElementById('al-n').value,d=document.getElementById('al-d').value;
+  const {ok,data} = await api('/assign-license',{method:'POST',body:JSON.stringify({app_name:n,duration:d})});
+  showRes('al-r',data,ok);
+  if(ok){
+    addLog('✅',`Assigned <strong>${d}</strong> license for <strong>${n}</strong>: <strong>${data.license}</strong>`);
+    pushToTable({license_key:data.license,app:n,duration:d,user:'—',hwid:'—',expiry:data.expiry,status:'active'});
+  } else addLog('❌',`Assign failed: ${data.error}`,'error');
+}
+async function lookupLic(){
+  const k=document.getElementById('ll-k').value;
+  const {ok,data} = await api('/get-license',{method:'POST',body:JSON.stringify({license_key:k})});
+  showRes('ll-r',data,ok);
+  if(ok){
+    addLog('🔍',`Looked up license <strong>${k}</strong>`);
+    pushToTable({
+      license_key:data.license_key,app:data.app_name,
+      duration: k.includes('-L-')?'Lifetime':k.includes('-M-')?'Month':k.includes('-W-')?'Week':'Day',
+      user:data.user,hwid:data.hwid,expiry:data.expiry_date,status:'active'
+    });
+    document.getElementById('an-lic').textContent = (parseInt(document.getElementById('an-lic').textContent)||0);
+  } else addLog('❌',`Lookup failed: ${data.error}`,'error');
+}
+async function banLic(){
+  const k=document.getElementById('bl-k').value;
+  if(!confirm(`Ban license ${k}? This cannot be undone.`)) return;
+  const {ok,data} = await api('/ban-license',{method:'POST',body:JSON.stringify({license_key:k})});
+  showRes('bl-r',data,ok);
+  if(ok) addLog('🚫',`Banned license <strong>${k}</strong>`,'ban');
+  else addLog('❌',`Ban failed: ${data.error}`,'error');
+}
+
+/* ─── HWID OPS ─── */
+async function resetHWID(){
+  const k=document.getElementById('rh-k').value,u=document.getElementById('rh-u').value;
+  const {ok,data} = await api('/reset-hwid',{method:'POST',body:JSON.stringify({license_key:k,user:u})});
+  showRes('rh-r',data,ok);
+  if(ok) addLog('🖥',`HWID reset for <strong>${k}</strong> (user: ${u})`);
+  else addLog('❌',`HWID reset failed: ${data.error}`,'error');
+}
+async function updateUser(){
+  const k=document.getElementById('uu-k').value,u=document.getElementById('uu-u').value;
+  const {ok,data} = await api('/update-user',{method:'PATCH',body:JSON.stringify({license_key:k,user:u})});
+  showRes('uu-r',data,ok);
+  if(ok) addLog('👤',`Updated user for <strong>${k}</strong> → ${u}`);
+  else addLog('❌',`User update failed: ${data.error}`,'error');
+}
+
+/* ─── CLEANUP ─── */
+async function doCleanup(){
+  const {ok,data} = await api('/cleanup',{method:'POST'});
+  if(ok){
+    const n = parseInt(data.message.match(/\d+/)?.[0]||0);
+    cleanedCount+=n;
+    document.getElementById('s-cleaned').textContent = cleanedCount;
+    addLog('🧹',`Cleanup: removed <strong>${n}</strong> expired licenses`);
+    await refreshAll();
+  }
+}
+
+/* ─── LICENSE TABLE ─── */
+function pushToTable(row){
+  licenseData.unshift(row);
+  if(licenseData.length>100) licenseData.pop();
+  renderLicTable();
+}
+function renderLicTable(){
+  const body = document.getElementById('lic-table-body');
+  if(!licenseData.length){
+    body.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">No licenses loaded yet.</td></tr>';
+    return;
+  }
+  body.innerHTML = licenseData.map(r=>{
+    const isLife = r.expiry==='Lifetime';
+    const pill = r.status==='active' ? 'pill-ok' : 'pill-err';
+    const durPill = isLife?'pill-life':'pill-acc';
+    return `<tr>
+      <td><span style="color:var(--text)">${r.license_key||'—'}</span></td>
+      <td>${r.app||'—'}</td>
+      <td><span class="pill ${durPill}">${r.duration||'—'}</span></td>
+      <td>${r.user||'—'}</td>
+      <td>${r.hwid&&r.hwid!=='Not bound'?'<span class="pill pill-ok">Bound</span>':'<span class="pill pill-warn">Free</span>'}</td>
+      <td style="font-size:11px">${r.expiry||'—'}</td>
+      <td><span class="pill ${pill}">${r.status||'active'}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ─── CHARTS ─── */
+function buildCharts(){
+  const isDark = document.documentElement.getAttribute('data-theme')==='dark';
+  const gridColor = isDark?'rgba(255,255,255,0.05)':'rgba(0,0,0,0.06)';
+  const textColor = isDark?'#6b6b8a':'#8b89a8';
+
+  Chart.defaults.color = textColor;
+  Chart.defaults.borderColor = gridColor;
+
+  // Action counts chart
+  const actCtx = document.getElementById('chart-actions').getContext('2d');
+  if(chartActions) chartActions.destroy();
+  const actLabels = Object.keys(actionCounts).slice(0,6);
+  const actValues = actLabels.map(k=>actionCounts[k]);
+  chartActions = new Chart(actCtx,{
+    type:'bar',
+    data:{
+      labels: actLabels.length?actLabels:['No data'],
+      datasets:[{
+        label:'Actions',
+        data: actValues.length?actValues:[0],
+        backgroundColor:['#818cf8','#fb7185','#34d399','#fbbf24','#38bdf8','#c084fc'],
+        borderRadius:6, borderSkipped:false,
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        y:{grid:{color:gridColor},ticks:{color:textColor}},
+        x:{grid:{display:false},ticks:{color:textColor}}
+      }
+    }
+  });
+
+  // Duration distribution
+  const durCtx = document.getElementById('chart-duration').getContext('2d');
+  if(chartDuration) chartDuration.destroy();
+  const durLabels = Object.keys(durationCounts);
+  const durValues = Object.values(durationCounts);
+  const total = durValues.reduce((a,b)=>a+b,0);
+  chartDuration = new Chart(durCtx,{
+    type:'doughnut',
+    data:{
+      labels:durLabels,
+      datasets:[{
+        data:total?durValues:[1,0,0,0],
+        backgroundColor:['#fbbf24','#818cf8','#34d399','#fb7185'],
+        borderColor:isDark?'#111125':'#fafaff',
+        borderWidth:3,hoverOffset:6,
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{position:'bottom',labels:{padding:16,font:{size:11}}},
+      },
+      cutout:'65%',
+    }
+  });
+
+  // Populate analytics stats
+  document.getElementById('an-life').textContent = durationCounts.Lifetime||0;
+}
+
+/* ─── ENTER KEY on login ─── */
+document.getElementById('l-token').addEventListener('keydown',e=>e.key==='Enter'&&doLogin());
+</script>
+</body>
+</html>
