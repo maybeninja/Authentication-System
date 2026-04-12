@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Auth System — API Docs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#060608;
+  --s1:#0c0c10;
+  --s2:#111116;
+  --s3:#18181e;
+  --border:#1e1e28;
+  --border2:#28283a;
+  --accent:#a78bfa;
+  --accent2:#34d399;
+  --accent3:#60a5fa;
+  --danger:#f87171;
+  --warn:#fbbf24;
+  --text:#f8fafc;
+  --sub:#94a3b8;
+  --muted:#475569;
+  --mono:'JetBrains Mono',monospace;
+  --serif:'Instrument Serif',serif;
+  --sans:'Geist',sans-serif;
+  --sidebar:260px;
+}
+
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;line-height:1.6}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  position:fixed;top:0;left:0;bottom:0;width:var(--sidebar);
+  background:var(--s1);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;z-index:100;overflow-y:auto;
+}
+.sb-head{padding:24px 20px 20px;border-bottom:1px solid var(--border)}
+.sb-brand{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.sb-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.sb-brand h1{font-size:14px;font-weight:700;color:var(--text)}
+.version-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-family:var(--mono);padding:3px 8px;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:100px;color:var(--accent)}
+.dot-live{width:5px;height:5px;border-radius:50%;background:var(--accent2);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+.sb-search{margin-top:12px;position:relative}
+.sb-search input{width:100%;background:var(--s2);border:1px solid var(--border2);border-radius:7px;padding:8px 12px 8px 32px;font-size:12px;font-family:var(--mono);color:var(--text);outline:none;transition:border-color .15s}
+.sb-search input:focus{border-color:var(--accent)}
+.sb-search input::placeholder{color:var(--muted)}
+.sb-search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted)}
+
+nav{flex:1;padding:12px 0}
+.nav-group{margin-bottom:4px}
+.nav-label{font-size:9px;font-family:var(--mono);letter-spacing:.15em;text-transform:uppercase;color:var(--muted);padding:10px 20px 4px}
+.nav-link{display:flex;align-items:center;gap:8px;padding:7px 20px;font-size:12px;font-weight:500;color:var(--sub);cursor:pointer;text-decoration:none;transition:all .12s;border-left:2px solid transparent}
+.nav-link:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.nav-link.active{color:var(--accent);border-left-color:var(--accent);background:rgba(167,139,250,.06)}
+.nav-link .method{font-family:var(--mono);font-size:9px;font-weight:600;padding:1px 5px;border-radius:3px;flex-shrink:0}
+.m-post{background:rgba(167,139,250,.15);color:var(--accent)}
+.m-get{background:rgba(52,211,153,.15);color:var(--accent2)}
+.m-patch{background:rgba(96,165,250,.15);color:var(--accent3)}
+
+.sb-footer{padding:14px 20px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);font-family:var(--mono)}
+
+/* ── MAIN ── */
+.main{margin-left:var(--sidebar);min-height:100vh}
+
+/* ── HERO ── */
+.hero{
+  padding:72px 64px 56px;
+  background:radial-gradient(ellipse 70% 50% at 60% 0%,rgba(167,139,250,.08) 0%,transparent 70%);
+  border-bottom:1px solid var(--border);
+  position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(167,139,250,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(167,139,250,.03) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none;
+}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:16px;padding:4px 10px;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:100px}
+.hero h2{font-family:var(--serif);font-size:48px;line-height:1.15;margin-bottom:16px;font-style:italic}
+.hero h2 span{font-style:normal;color:var(--accent)}
+.hero p{font-size:16px;color:var(--sub);max-width:560px;line-height:1.7;margin-bottom:28px}
+.hero-badges{display:flex;gap:10px;flex-wrap:wrap}
+.hbadge{font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid var(--border2);color:var(--muted)}
+.hbadge.green{border-color:rgba(52,211,153,.3);color:var(--accent2);background:rgba(52,211,153,.05)}
+
+/* ── CONTENT ── */
+.content{padding:56px 64px;max-width:900px}
+
+/* ── SECTIONS ── */
+.doc-section{margin-bottom:64px;scroll-margin-top:24px}
+.section-title{font-family:var(--serif);font-size:30px;font-style:italic;margin-bottom:6px}
+.section-title span{font-style:normal;color:var(--accent)}
+.section-sub{font-size:14px;color:var(--sub);margin-bottom:28px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+
+/* ── ENDPOINT CARDS ── */
+.endpoint{background:var(--s1);border:1px solid var(--border);border-radius:12px;margin-bottom:20px;overflow:hidden;transition:border-color .2s}
+.endpoint:hover{border-color:var(--border2)}
+.ep-head{padding:16px 20px;display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none}
+.ep-method{font-family:var(--mono);font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;flex-shrink:0;min-width:52px;text-align:center}
+.ep-path{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--text);flex:1}
+.ep-desc{font-size:12px;color:var(--muted);flex-shrink:0}
+.ep-chevron{color:var(--muted);font-size:11px;transition:transform .2s}
+.endpoint.open .ep-chevron{transform:rotate(180deg)}
+.ep-body{display:none;padding:0 20px 20px;border-top:1px solid var(--border)}
+.endpoint.open .ep-body{display:block}
+
+.ep-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.ep-full{grid-column:1/-1}
+
+.ep-label{font-size:10px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+
+/* ── CODE BLOCKS ── */
+.code-wrap{position:relative;background:var(--s2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.code-topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid var(--border);background:var(--s3)}
+.code-lang{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.copy-btn{font-family:var(--mono);font-size:10px;color:var(--muted);background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:4px;transition:all .15s}
+.copy-btn:hover{color:var(--accent);background:rgba(167,139,250,.1)}
+.copy-btn.copied{color:var(--accent2)}
+pre{padding:16px;overflow-x:auto;font-family:var(--mono);font-size:12px;line-height:1.7;color:#e2e8f0}
+.kw{color:#c084fc}.str{color:#86efac}.num{color:#67e8f9}.cm{color:#475569;font-style:italic}.key{color:#93c5fd}.punc{color:#94a3b8}
+
+/* ── PARAMS TABLE ── */
+.params-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}
+.params-table th{text-align:left;padding:8px 12px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-family:var(--mono);border-bottom:1px solid var(--border);background:var(--s3)}
+.params-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:top}
+.params-table tr:last-child td{border-bottom:none}
+.param-name{font-family:var(--mono);color:var(--accent);font-size:12px}
+.param-type{font-family:var(--mono);font-size:10px;color:var(--accent3);background:rgba(96,165,250,.1);padding:1px 5px;border-radius:3px}
+.param-req{font-family:var(--mono);font-size:9px;color:var(--danger);background:rgba(248,113,113,.1);padding:1px 5px;border-radius:3px}
+.param-opt{font-family:var(--mono);font-size:9px;color:var(--muted);background:rgba(255,255,255,.05);padding:1px 5px;border-radius:3px}
+.param-desc{color:var(--sub);font-size:12px}
+
+/* ── RESPONSE BADGES ── */
+.status-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.sbadge{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:5px;font-weight:600}
+.s200{background:rgba(52,211,153,.1);color:var(--accent2);border:1px solid rgba(52,211,153,.2)}
+.s201{background:rgba(52,211,153,.1);color:var(--accent2);border:1px solid rgba(52,211,153,.2)}
+.s400{background:rgba(251,191,36,.1);color:var(--warn);border:1px solid rgba(251,191,36,.2)}
+.s401{background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.2)}
+.s403{background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.2)}
+.s404{background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.2)}
+.s409{background:rgba(251,191,36,.1);color:var(--warn);border:1px solid rgba(251,191,36,.2)}
+.s426{background:rgba(96,165,250,.1);color:var(--accent3);border:1px solid rgba(96,165,250,.2)}
+.s429{background:rgba(251,191,36,.1);color:var(--warn);border:1px solid rgba(251,191,36,.2)}
+
+/* ── CALLOUTS ── */
+.callout{border-radius:8px;padding:12px 16px;margin:16px 0;font-size:13px;line-height:1.6;display:flex;gap:10px}
+.callout-note{background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.2);color:var(--sub)}
+.callout-warn{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);color:#fde68a}
+.callout-danger{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.2);color:#fca5a5}
+.callout-icon{flex-shrink:0;font-size:15px}
+
+/* ── TRY IT ── */
+.try-it{background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:20px;margin-top:20px}
+.try-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.try-head h4{font-size:12px;font-weight:700;color:var(--text);font-family:var(--mono)}
+.try-grid{display:grid;gap:8px;margin-bottom:12px}
+.try-field label{display:block;font-size:10px;font-family:var(--mono);color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em}
+.try-field input,.try-field select{width:100%;background:var(--s3);border:1px solid var(--border2);border-radius:6px;padding:8px 10px;font-size:12px;font-family:var(--mono);color:var(--text);outline:none;transition:border-color .15s}
+.try-field input:focus,.try-field select:focus{border-color:var(--accent)}
+.try-field input::placeholder{color:var(--muted)}
+.try-run{display:flex;align-items:center;gap:8px}
+.run-btn{padding:8px 16px;border-radius:7px;border:none;background:linear-gradient(135deg,var(--accent),#7c3aed);color:#fff;font-family:var(--mono);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.run-btn:hover{opacity:.85;transform:translateY(-1px)}
+.url-field{flex:1;background:var(--s1);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:11px;font-family:var(--mono);color:var(--muted);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.try-response{margin-top:12px;display:none}
+.try-response.show{display:block}
+.try-res-head{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.try-status{font-family:var(--mono);font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px}
+
+/* ── STEPS ── */
+.steps{counter-reset:steps;display:grid;gap:0}
+.step{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--border)}
+.step:last-child{border-bottom:none}
+.step-num{width:28px;height:28px;border-radius:50%;background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.3);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);flex-shrink:0;margin-top:2px}
+.step-content h4{font-size:14px;font-weight:600;margin-bottom:6px}
+.step-content p{font-size:13px;color:var(--sub);line-height:1.6}
+
+/* ── GIT SECTION ── */
+.git-step{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:12px}
+.git-step-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.git-num{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#7c3aed);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;font-family:var(--mono);flex-shrink:0}
+.git-step-head h4{font-size:13px;font-weight:700}
+.git-step-head p{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* ── INLINE CODE ── */
+code{font-family:var(--mono);font-size:12px;background:rgba(167,139,250,.1);color:var(--accent);padding:1px 5px;border-radius:4px}
+
+/* ── RATE LIMIT TABLE ── */
+.rate-table{width:100%;border-collapse:collapse;font-size:12px}
+.rate-table th{text-align:left;padding:8px 12px;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border-bottom:1px solid var(--border);background:var(--s3)}
+.rate-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04);font-family:var(--mono);font-size:12px}
+.rate-table tr:last-child td{border-bottom:none}
+
+/* ── FOOTER ── */
+footer{padding:40px 64px;border-top:1px solid var(--border);color:var(--muted);font-size:12px;font-family:var(--mono);display:flex;justify-content:space-between;align-items:center}
+</style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar">
+  <div class="sb-head">
+    <div class="sb-brand">
+      <div class="sb-icon">🔐</div>
+      <h1>Auth System</h1>
+    </div>
+    <div class="version-badge"><div class="dot-live"></div>v2.0 — API Docs</div>
+    <div class="sb-search">
+      <span class="sb-search-icon">⌕</span>
+      <input type="text" placeholder="Search endpoints…" oninput="searchNav(this.value)"/>
+    </div>
+  </div>
+
+  <nav id="sidebar-nav">
+    <div class="nav-group">
+      <div class="nav-label">Getting Started</div>
+      <a class="nav-link active" href="#overview">Overview</a>
+      <a class="nav-link" href="#auth">Authentication</a>
+      <a class="nav-link" href="#rate-limits">Rate Limits</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Endpoints</div>
+      <a class="nav-link" href="#ep-health"><span class="method m-get">GET</span>Health Check</a>
+      <a class="nav-link" href="#ep-check"><span class="method m-get">GET</span>Stats</a>
+      <a class="nav-link" href="#ep-create-app"><span class="method m-post">POST</span>Create App</a>
+      <a class="nav-link" href="#ep-update-version"><span class="method m-post">POST</span>Update Version</a>
+      <a class="nav-link" href="#ep-gen-license"><span class="method m-post">POST</span>Generate Licenses</a>
+      <a class="nav-link" href="#ep-assign-license"><span class="method m-post">POST</span>Assign License</a>
+      <a class="nav-link" href="#ep-verify"><span class="method m-get">GET</span>Verify License</a>
+      <a class="nav-link" href="#ep-get-license"><span class="method m-post">POST</span>Get License</a>
+      <a class="nav-link" href="#ep-ban"><span class="method m-post">POST</span>Ban License</a>
+      <a class="nav-link" href="#ep-reset-hwid"><span class="method m-post">POST</span>Reset HWID</a>
+      <a class="nav-link" href="#ep-update-user"><span class="method m-patch">PATCH</span>Update User</a>
+      <a class="nav-link" href="#ep-cleanup"><span class="method m-post">POST</span>Cleanup</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Guides</div>
+      <a class="nav-link" href="#client-guide">Client Integration</a>
+      <a class="nav-link" href="#github-guide">GitHub Merge Guide</a>
+    </div>
+  </nav>
+
+  <div class="sb-footer">Base URL: <span style="color:var(--accent)">http://localhost:5000</span></div>
+</aside>
+
+<!-- ── MAIN ── -->
+<main class="main">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-eyebrow">🔐 REST API Reference</div>
+    <h2>Auth System <span>API Docs</span></h2>
+    <p>Complete reference for the Auth System license management API. Includes all endpoints, request/response examples, and a live try-it console.</p>
+    <div class="hero-badges">
+      <span class="hbadge green">✓ v2.0 Improved</span>
+      <span class="hbadge">Flask · Python</span>
+      <span class="hbadge">Bearer Token Auth</span>
+      <span class="hbadge">Rate Limited</span>
+      <span class="hbadge">HWID Locking</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ── OVERVIEW ── -->
+    <section class="doc-section" id="overview">
+      <div class="section-title">Getting <span>Started</span></div>
+      <div class="section-sub">Everything you need to start using the API</div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h4>Run the server</h4>
+            <p>Start <code>server.py</code> — it runs on <code>0.0.0.0</code> at the port in your <code>config.yaml</code>.</p>
+            <div style="margin-top:10px">
+            <div class="code-wrap"><div class="code-topbar"><span class="code-lang">bash</span><button class="copy-btn" onclick="copy(this,'python server.py')">copy</button></div><pre>python server.py</pre></div>
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h4>All requests need a Bearer token</h4>
+            <p>Set the <code>Authorization</code> header on every request using the token from <code>config.yaml</code>.</p>
+            <div style="margin-top:10px">
+            <div class="code-wrap"><div class="code-topbar"><span class="code-lang">http</span><button class="copy-btn" onclick="copy(this,'Authorization: Bearer your_token_here')">copy</button></div><pre>Authorization: Bearer your_token_here</pre></div>
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h4>Create an app, generate licenses, verify</h4>
+            <p>The flow is: <strong>Create App</strong> → <strong>Generate Licenses</strong> → <strong>Assign License</strong> → <strong>Verify License</strong> from your client software.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── AUTH ── -->
+    <section class="doc-section" id="auth">
+      <div class="section-title"><span>Authentication</span></div>
+      <div class="section-sub">Bearer token required on all endpoints</div>
+      <p style="font-size:14px;color:var(--sub);margin-bottom:16px">Every request must include the Authorization header. The token is compared using constant-time comparison to prevent timing attacks.</p>
+      <div class="code-wrap"><div class="code-topbar"><span class="code-lang">http</span><button class="copy-btn" onclick="copy(this,'Authorization: Bearer YOUR_TOKEN')">copy</button></div>
+      <pre><span class="key">Authorization</span><span class="punc">:</span> Bearer <span class="str">YOUR_TOKEN</span></pre></div>
+      <div class="callout callout-danger" style="margin-top:16px"><span class="callout-icon">🚫</span>Requests without a valid token always return <code>HTTP 401 {"error": "Unauthorized"}</code>.</div>
+    </section>
+
+    <!-- ── RATE LIMITS ── -->
+    <section class="doc-section" id="rate-limits">
+      <div class="section-title">Rate <span>Limits</span></div>
+      <div class="section-sub">Per-IP limits per 60-second window</div>
+      <div class="code-wrap" style="border-radius:10px;overflow:hidden">
+        <table class="rate-table">
+          <thead><tr><th>Endpoint</th><th>Limit</th><th>Window</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--accent2)">/Auth/verify-license</td><td>60 req</td><td>60s</td></tr>
+            <tr><td style="color:var(--sub)">/Auth/get-license, /Auth/assign-license, /Auth/update-user</td><td>30 req</td><td>60s</td></tr>
+            <tr><td style="color:var(--sub)">/Auth/create-app, /Auth/update-version, /Auth/ban-license</td><td>20 req</td><td>60s</td></tr>
+            <tr><td style="color:var(--sub)">/Auth/gen-license, /Auth/reset-hwid, /Auth/cleanup</td><td>10 req</td><td>60s</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout callout-note" style="margin-top:12px"><span class="callout-icon">💡</span>Rate limited requests return <code>HTTP 429 {"error": "Too many requests"}</code>. Wait 60 seconds before retrying.</div>
+    </section>
+
+    <!-- ── ENDPOINTS ── -->
+
+    <!-- Health -->
+    <section class="doc-section" id="ep-health">
+      <div class="section-title">Health <span>& Status</span></div>
+      <div class="section-sub">Check if the server is alive</div>
+
+      <div class="endpoint open" id="end-health">
+        <div class="ep-head" onclick="toggleEp('end-health')">
+          <span class="ep-method m-get">GET</span>
+          <span class="ep-path">/Auth/health</span>
+          <span class="ep-desc">No auth required</span>
+          <span class="ep-chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <p style="font-size:13px;color:var(--sub);margin-bottom:16px">Returns server status and current UTC timestamp. No authentication needed — use this for uptime monitoring.</p>
+          <div class="ep-label">Response 200</div>
+          <div class="code-wrap"><div class="code-topbar"><span class="code-lang">json</span><button class="copy-btn" onclick="copy(this,'{&quot;status&quot;: &quot;ok&quot;, &quot;ts&quot;: &quot;2025-04-11T12:00:00&quot;}')">copy</button></div>
+          <pre><span class="punc">{</span>
+  <span class="key">"status"</span><span class="punc">:</span> <span class="str">"ok"</span><span class="punc">,</span>
+  <span class="key">"ts"</span><span class="punc">:</span> <span class="str">"2025-04-11T12:00:00"</span>
+<span class="punc">}</span></pre></div>
+          <div class="try-it">
+            <div class="try-head"><h4>⚡ Try it</h4></div>
+            <div class="try-field" style="margin-bottom:10px"><label>Server URL</label><input id="ti-base" type="text" value="http://localhost:5000" placeholder="http://localhost:5000"/></div>
+            <div class="try-run">
+              <div class="url-field" id="health-url">GET http://localhost:5000/Auth/health</div>
+              <button class="run-btn" onclick="tryHealth()">Run →</button>
+            </div>
+            <div class="try-response" id="health-res"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="end-check">
+        <div class="ep-head" onclick="toggleEp('end-check')">
+          <span class="ep-method m-get">GET</span>
+          <span class="ep-path">/Auth/check</span>
+          <span class="ep-desc">Total apps &amp; licenses</span>
+          <span class="ep-chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="ep-label">Response 200</div>
+          <div class="code-wrap"><div class="code-topbar"><span class="code-lang">json</span><button class="copy-btn" onclick="copy(this,'{&quot;total_apps&quot;: 3, &quot;total_licenses&quot;: 47}')">copy</button></div>
+          <pre><span class="punc">{</span>
+  <span class="key">"total_apps"</span><span class="punc">:</span> <span class="num">3</span><span class="punc">,</span>
+  <span class="key">"total_licenses"</span><span class="punc">:</span> <span class="num">47</span>
+<span class="punc">}</span></pre></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Create App -->
+    <section class="doc-section" id="ep-create-app">
+      <div class="section-title">Application <span>Management</span></div>
+      <div class="section-sub">Create and update your registered apps</div>
+
+      <div class="endpoint" id="end-create-app">
+        <div class="ep-head" onclick="toggleEp('end-create-app')">
+          <span class="ep-method m-post">POST</span>
+          <span class="ep-path">/Auth/create-app</span>
+          <span class="ep-desc">Register a new application</span>
+          <span class="ep-chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="ep-grid">
+            <div>
+              <div class="ep-label">Request Body</div>
+              <table class="params-table">
+                <thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+                <tbody>
+                  <tr><td><span class="param-name">app_name</span></td><td><span class="param-type">string</span> <span class="param-req">required</span></td><td class="param-desc">Unique name. Alphanumeric, dash, underscore only.</td></tr>
+                  <tr><td><span class="param-name">version</span></td><td><span class="param-type">string</span></td><td class="param-desc">Initial version e.g. <code>"1.0.0"</code></td></tr>
+                  <tr><td><span class="param-name">link</span></td><td><span class="param-type">string</span></td><td class="param-desc">Download URL for this app</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <div class="ep-label">Response Codes</div>
+              <div class="status-badges">
+                <span class="sbadge s201">201 Created</span>
+                <span class="sbadge s400">400 Bad Request</span>
+                <span class="sbadge s401">401 Unauthorized</span>
+                <span class="sbadge s409">409 Already Exists</span>
+              </div>
+              <div style="margin-top:12px">
+                <div class="ep-label">Response 201</div>
+                <div class="code-wrap"><div class="code-topbar"><span class="code-lang">json</span><button class="copy-btn" onclick="copy(this,'see below')">copy</button></div>
+                <pre style="font-size:11px"><span class="punc">{</span>
+  <span class="key">"app_name"</span><span class="punc">:</span> <span class="str">"MyApp"</span><span class="punc">,</span>
+  <span class="key">"app_secret"</span><span class="punc">:</span> <span class="str">"aBcDeFgH12345678"</span><span class="punc">,</span>
+  <span class="key">"app_id"</span><span class="punc">:</span> <span class="str">"12345678"</span><span class="punc">,</span>
+  <span class="key">"version"</span><span class="punc">:</span> <span class="str">"1.0.0"</span>
+<span class="punc">}</span></pre></div>
+              </div>
+            </div>
+            <div class="ep-full">
+              <div class="ep-label">Example Request</div>
+              <div class="code-wrap"><div class="code-topbar"><span class="code-lang">python</span><button class="copy-btn" onclick="copy(this,`import requests\nr = requests.post('http://localhost:5000/Auth/create-app',\n    headers={'Authorization': 'Bearer TOKEN'},\n    json={'app_name': 'MyApp', 'version': '1.0.0', 'link': 'https://…'}\n)\nprint(r.json())`)">copy</button></div>
+              <pre><span class="kw">import</span> requests
+
+r <span class="punc">=</span> requests<span class="punc">.</span>post<span class="punc">(</span><span class="str">'http://localhost:5000/Auth/create-app'</span><span class="punc">,</span>
+    headers<span class="punc">={</span><span class="str">'Authorization'</span><span class="punc">:</span> <span class="str">'Bearer TOKEN'</span><span class="punc">},</span>
+    json<span class="punc">={</span>
+        <span class="str">'app_name'</span><span class="punc">:</span> <span class="str">'MyApp'</span><span class="punc">,</span>
+        <span class="str">'version'</span><span class="punc">:</span>  <span class="str">'1.0.0'</span><span class="punc">,</span>
+        <span class="str">'link'</span><span class="punc">:</span>     <span class="str">'https://download.example.com/MyApp.exe'</span>
+    <span class="punc">}</span>
+<span class="punc">)</span>
+<span class="kw">print</span><span class="punc">(</span>r<span class="punc">.</span>json<span class="punc">())</span>
+<span class="cm"># Save app_secret — you'll need it for verify-license!</span></pre></div>
+              <div class="callout callout-warn"><span class="callout-icon">⚠️</span>Save the <code>app_secret</code> from the response. It is shown only once and is required for <code>verify-license</code> calls.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="end-update-version">
+        <div class="ep-head" onclick="toggleEp('end-update-version')">
+          <span class="ep-method m-post">POST</span>
+          <span class="ep-path">/Auth/update-version</span>
+          <span class="ep-desc">Update app version &amp; download link</span>
+          <span class="ep-chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <table class="params-table">
+            <thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="param-name">app_name</span></td><td><span class="param-type">string</span> <span class="param-req">required</span></td><td class="param-desc">Name of the existing app</td></tr>
+              <tr><td><span class="param-name">version</span></td><td><span class="param-type">string</span> <span class="param-req">required</span></td><td class="param-desc">New version string</td></tr>
+              <tr><td><span class="param-name">link</span></td><td><span class="param-type">string</span></td><td class="param-desc">New download URL</td></tr>
+            </tbody>
+          </table>
+          <div class="status-badges" style="margin-top:12px"><span class="sbadge s200">200 OK</span><span class="sbadge s400">400</span><span class="sbadge s401">401</span><span class="sbadge s404">404 Not Found</span></div>
+          <div class="callout callout-note" style="margin-top:12px"><span class="callout-icon">💡</span>When you update the version, clients running an older version will receive <code>HTTP 426</code> on verify and be redirected to the new download link.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Licenses -->
+    <section class="doc-section" id="ep-gen-license">
+      <div class="section-title">License <span>Management</span></div>
+      <div class="section-sub">Generate, assign, verify, and ban licenses</div>
+
+      <div class="endpoint" id="end-gen">
+        <div class="ep-head" onclick="toggleEp('end-gen')">
+          <span class="ep-method m-post">POST</span>
+          <span class="ep-path">/Auth/gen-license</span>
+          <span class="ep-desc">Generate unused license keys</span>
+          <span class="ep-chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <div class="ep-grid">
+            <div>
+              <div class="ep-label">Request Body</div>
+              <table class="params-table">
+                <thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+                <tbody>
+                  <tr><td><span class="param-name">app_name</span></td><td><span class="param-type">string</span> <span class="param-req">required</span></td><td class="param-desc">Target app name</td></tr>
+                  <tr><td><span class="param-name">duration</span></td><td><span class="param-type">string</span> <span class="param-req">required</span></td><td class="param-desc"><code>Lifetime</code> <code>Month</code> <code>Week</code> <code>Day</code></td></tr>
+                  <tr><td><span class="param-name">quantity</span></td><td><span class="param-type">integer</span> <span class="param-req">required</span></td><td class="param-desc">1 – 500</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <div class="ep-label">Response 201</div>
+              <div class="code-wrap"><div class="code-topbar"><span class="code-lang">json</span></div>
+              <pre style="font-size:11px"><span class="punc">{</span>
+  <span class="key">"message"</span><span class="punc">:</span> <span class="str">"10 licenses generated"</span><span class="punc">,</span>
+  <span class="key">"keys"</span><span class="punc">:</span> <span class="punc">[</span>
+    <span class="str">"MyApp-M-AbCd1234"</span><span class="punc">,</span>
+    <span class="str">"MyApp-M-EfGh5678"</span>
+  <span class="punc">]</span>
+<span class="punc">}</span></pre></div>
+            </div>
+            <div class="ep-full">
+              <div class="callout callout-note"><span class="callout-icon">💡</span>Generated keys are <em>unused</em> — they sit in a queue. Call <code>/assign-license</code> to activate one and set its expiry.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="end-assign">
+        <div class="ep-head" onclick="toggleEp('end-assign')">
+          <span class="ep-method m-post">POST</span>
+          <span class="ep-path">/Auth/assign-license</span>
+          <span class="ep-desc">Activate a license from the unused pool</span>
+          <span class="ep-chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <table class="params-table">
+            <thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="param-name">app_name</span></td><td><span class="param-type">string</span> <span class="param-req">required</span></td><td class="param-desc">Target app name</td></tr>
+              <tr><td><span class="param-name">duration</span></td><td><span class="param-type">string</span> <span class="param-req">required</span></td><td class="param-desc"><code>Lifetime</code> <code>Month</code> <code>Week</code> <code>Day</code></td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:12px"><div class="ep-label">Response 200</div>
+          <div class="code-wrap"><div class="code-topbar"><span class="code-lang">json</span></div>
+          <pre><span class="punc">{</span> <span class="key">"license"</span><span class="punc">:</span> <span class="str">"MyApp-M-AbCd1234"</span><span class="punc">,</span> <span class="key">"expiry"</span><span class="punc">:</span> <span class="str">"2025-05-11 12:00:00"</span> <span class="punc">}</span></pre></div></div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="end-verify">
+        <div class="ep-head" onclick="toggleEp('end-verify')">
+          <span class="ep-method m-get">GET</span>
+          <span class="ep-path">/Auth/verify-license</span>
+          <span class="ep-desc">Verify a license from client software</span>
+          <span class="ep-chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <p style="font-size:13px;color:var(--sub);margin-bottom:12px">This is the endpoint your <strong>client app</strong> calls at startup to validate the user's license. Parameters are passed as query strings.</p>
+          <div class="ep-grid">
+            <div>
+              <div class="ep-label">Query Parameters</div>
+              <table class="params-table">
+                <thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+                <tbody>
+                  <tr><td><span class="param-name">license_key</span></td><td><span class="param-type">string</span> <span class="param-req">required</span></td><td class="param-desc">The license key to verify</td></tr>
+                  <tr><td><span class="param-name">app_name</span></td><td><span class="param-type">string</span> <span class="param-req">required</span></td><td class="param-desc">Your app's name</td></tr>
+                  <tr><td><span class="param-name">app_secret</span></td><td><span class="param-type">string</span> <span class="param-req">required</span></td><td class="param-desc">From create-app response</td></tr>
+                  <tr><td><span class="param-name">hwid</span></td><td><span class="param-type">string</span> <span class="param-req">required</span></td><td class="param-desc">Client's hardware ID</td></tr>
+                  <tr><td><span class="param-name">version</span></td><td><span class="param-type">string</span> <span class="param-req">required</span></td><td class="param-desc">Client app version</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <div class="ep-label">Response Codes</div>
+              <div class="status-badges">
+                <span class="sbadge s200">200 Valid</span>
+                <span class="sbadge s401">401 Bad secret</span>
+                <span class="sbadge s403">403 Expired/HWID</span>
+                <span class="sbadge s404">404 Not found</span>
+                <span class="sbadge s426">426 Old version</span>
+              </div>
+              <div style="margin-top:12px"><div class="ep-label">Response 200</div>
+              <div class="code-wrap"><div class="code-topbar"><span class="code-lang">json</span></div>
+              <pre style="font-size:11px"><span class="punc">{</span>
+  <span class="key">"message"</span><span class="punc">:</span> <span class="str">"License valid"</span><span class="punc">,</span>
+  <span class="key">"expiry"</span><span class="punc">:</span>  <span class="str">"2025-05-11 12:00:00"</span><span class="punc">,</span>
+  <span class="key">"hwid"</span><span class="punc">:</span>    <span class="str">"abc123def"</span>
+<span class="punc">}</span></pre></div></div>
+            </div>
+            <div class="ep-full">
+              <div class="ep-label">Full Python Client Example</div>
+              <div class="code-wrap"><div class="code-topbar"><span class="code-lang">python</span><button class="copy-btn" onclick="copy(this,document.getElementById('verify-code').textContent)">copy</button></div>
+              <pre id="verify-code"><span class="kw">import</span> requests<span class="punc">,</span> uuid
+
+<span class="cm"># Embed these in your compiled app — never expose publicly</span>
+API_URL    <span class="punc">=</span> <span class="str">"http://your-server.com/Auth/verify-license"</span>
+TOKEN      <span class="punc">=</span> <span class="str">"your_bearer_token"</span>
+APP_NAME   <span class="punc">=</span> <span class="str">"MyApp"</span>
+APP_SECRET <span class="punc">=</span> <span class="str">"aBcDeFgH12345678"</span>
+VERSION    <span class="punc">=</span> <span class="str">"1.0.0"</span>
+
+<span class="kw">def</span> <span class="key">get_hwid</span><span class="punc">():</span>
+    <span class="kw">return</span> str<span class="punc">(</span>uuid<span class="punc">.</span>UUID<span class="punc">(</span>int<span class="punc">=</span>uuid<span class="punc">.</span>getnode<span class="punc">()))</span>
+
+<span class="kw">def</span> <span class="key">verify_license</span><span class="punc">(</span>license_key<span class="punc">:</span> str<span class="punc">) -></span> bool<span class="punc">:</span>
+    r <span class="punc">=</span> requests<span class="punc">.</span>get<span class="punc">(</span>API_URL<span class="punc">,</span> params<span class="punc">={</span>
+        <span class="str">"license_key"</span><span class="punc">:</span> license_key<span class="punc">,</span>
+        <span class="str">"app_name"</span><span class="punc">:</span>    APP_NAME<span class="punc">,</span>
+        <span class="str">"app_secret"</span><span class="punc">:</span>  APP_SECRET<span class="punc">,</span>
+        <span class="str">"hwid"</span><span class="punc">:</span>        get_hwid<span class="punc">(),</span>
+        <span class="str">"version"</span><span class="punc">:</span>     VERSION<span class="punc">,</span>
+    <span class="punc">},</span> headers<span class="punc">={</span><span class="str">"Authorization"</span><span class="punc">:</span> f<span class="str">"Bearer {TOKEN}"</span><span class="punc">})</span>
+
+    <span class="kw">if</span> r<span class="punc">.</span>status_code <span class="punc">==</span> <span class="num">200</span><span class="punc">:</span>
+        <span class="kw">return</span> <span class="kw">True</span>
+    <span class="kw">elif</span> r<span class="punc">.</span>status_code <span class="punc">==</span> <span class="num">426</span><span class="punc">:</span>
+        link <span class="punc">=</span> r<span class="punc">.</span>json<span class="punc">().</span>get<span class="punc">(</span><span class="str">"link"</span><span class="punc">)</span>
+        <span class="kw">print</span><span class="punc">(</span>f<span class="str">"Update required → {link}"</span><span class="punc">)</span>
+    <span class="kw">else</span><span class="punc">:</span>
+        <span class="kw">print</span><span class="punc">(</span>r<span class="punc">.</span>json<span class="punc">().</span>get<span class="punc">(</span><span class="str">"error"</span><span class="punc">))</span>
+    <span class="kw">return</span> <span class="kw">False</span>
+
+<span class="cm"># At startup:</span>
+key <span class="punc">=</span> input<span class="punc">(</span><span class="str">"Enter your license key: "</span><span class="punc">)</span>
+<span class="kw">if not</span> verify_license<span class="punc">(</span>key<span class="punc">):</span>
+    exit<span class="punc">()</span></pre></div>
+              <div class="callout callout-warn"><span class="callout-icon">⚠️</span>On first use, the HWID is bound automatically. A different device returns <code>403 HWID mismatch</code>. Users must request an HWID reset from the admin.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="end-get-license">
+        <div class="ep-head" onclick="toggleEp('end-get-license')">
+          <span class="ep-method m-post">POST</span>
+          <span class="ep-path">/Auth/get-license</span>
+          <span class="ep-desc">Look up license details</span>
+          <span class="ep-chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody><tr><td><span class="param-name">license_key</span></td><td><span class="param-type">string</span> <span class="param-req">required</span></td><td class="param-desc">The license key to look up</td></tr></tbody></table>
+          <div style="margin-top:12px"><div class="ep-label">Response 200</div>
+          <div class="code-wrap"><div class="code-topbar"><span class="code-lang">json</span></div>
+          <pre><span class="punc">{</span>
+  <span class="key">"license_key"</span><span class="punc">:</span>  <span class="str">"MyApp-M-AbCd1234"</span><span class="punc">,</span>
+  <span class="key">"app_name"</span><span class="punc">:</span>    <span class="str">"MyApp"</span><span class="punc">,</span>
+  <span class="key">"user"</span><span class="punc">:</span>        <span class="str">"123456789"</span><span class="punc">,</span>
+  <span class="key">"expiry_date"</span><span class="punc">:</span> <span class="str">"2025-05-11 12:00:00"</span><span class="punc">,</span>
+  <span class="key">"hwid"</span><span class="punc">:</span>        <span class="str">"abc123def"</span><span class="punc">,</span>
+  <span class="key">"valid"</span><span class="punc">:</span>       <span class="kw">true</span>
+<span class="punc">}</span></pre></div></div>
+          <div class="status-badges" style="margin-top:8px"><span class="sbadge s200">200</span><span class="sbadge s401">401</span><span class="sbadge s403">403 Expired</span><span class="sbadge s404">404</span></div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="end-ban">
+        <div class="ep-head" onclick="toggleEp('end-ban')">
+          <span class="ep-method m-post">POST</span>
+          <span class="ep-path">/Auth/ban-license</span>
+          <span class="ep-desc">Permanently remove a license</span>
+          <span class="ep-chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody><tr><td><span class="param-name">license_key</span></td><td><span class="param-type">string</span> <span class="param-req">required</span></td><td class="param-desc">The key to ban and delete</td></tr></tbody></table>
+          <div class="callout callout-danger" style="margin-top:12px"><span class="callout-icon">🚫</span>Banning is <strong>irreversible</strong>. The license is permanently deleted from <code>active_license.json</code>.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HWID -->
+    <section class="doc-section" id="ep-reset-hwid">
+      <div class="section-title">HWID <span>& User</span></div>
+      <div class="section-sub">Device binding and user management</div>
+
+      <div class="endpoint" id="end-reset-hwid">
+        <div class="ep-head" onclick="toggleEp('end-reset-hwid')">
+          <span class="ep-method m-post">POST</span>
+          <span class="ep-path">/Auth/reset-hwid</span>
+          <span class="ep-desc">Clear device binding for a license</span>
+          <span class="ep-chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">license_key</span></td><td><span class="param-type">string</span> <span class="param-req">required</span></td><td class="param-desc">Target license key</td></tr>
+            <tr><td><span class="param-name">user</span></td><td><span class="param-type">string</span> <span class="param-req">required</span></td><td class="param-desc">Discord ID or username of the owner</td></tr>
+          </tbody></table>
+          <div class="callout callout-warn" style="margin-top:12px"><span class="callout-icon">⚠️</span>If the <code>user</code> field doesn't match the stored owner, license sharing is detected and the license is <strong>auto-banned</strong> (<code>403</code>).</div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="end-update-user">
+        <div class="ep-head" onclick="toggleEp('end-update-user')">
+          <span class="ep-method m-patch">PATCH</span>
+          <span class="ep-path">/Auth/update-user</span>
+          <span class="ep-desc">Transfer license to a new user</span>
+          <span class="ep-chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <table class="params-table"><thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="param-name">license_key</span></td><td><span class="param-type">string</span> <span class="param-req">required</span></td><td class="param-desc">Target license key</td></tr>
+            <tr><td><span class="param-name">user</span></td><td><span class="param-type">string</span> <span class="param-req">required</span></td><td class="param-desc">New Discord ID or username</td></tr>
+          </tbody></table>
+          <div class="status-badges" style="margin-top:10px"><span class="sbadge s200">200</span><span class="sbadge s400">400</span><span class="sbadge s401">401</span><span class="sbadge s404">404</span></div>
+        </div>
+      </div>
+
+      <div class="endpoint" id="end-cleanup">
+        <div class="ep-head" onclick="toggleEp('end-cleanup')">
+          <span class="ep-method m-post">POST</span>
+          <span class="ep-path">/Auth/cleanup</span>
+          <span class="ep-desc">Remove all expired licenses</span>
+          <span class="ep-chevron">▼</span>
+        </div>
+        <div class="ep-body">
+          <p style="font-size:13px;color:var(--sub);margin-bottom:12px">No body needed. Scans every app's active_license.json and deletes expired entries.</p>
+          <div class="code-wrap"><div class="code-topbar"><span class="code-lang">json</span></div>
+          <pre><span class="punc">{</span> <span class="key">"message"</span><span class="punc">:</span> <span class="str">"Removed 12 expired licenses"</span> <span class="punc">}</span></pre></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── CLIENT GUIDE ── -->
+    <section class="doc-section" id="client-guide">
+      <div class="section-title">Client <span>Integration</span></div>
+      <div class="section-sub">How to embed license verification in your tool</div>
+
+      <div class="callout callout-note"><span class="callout-icon">💡</span>Your tool (the software you sell) should call <code>/Auth/verify-license</code> at startup. Embed the <code>app_secret</code>, <code>app_name</code>, token, and your server URL directly in the compiled binary.</div>
+
+      <div style="margin-top:20px"><div class="ep-label">Status Code Handling</div>
+      <div class="code-wrap" style="border-radius:10px;overflow:hidden;margin-top:8px">
+        <table class="params-table">
+          <thead><tr><th>Code</th><th>Meaning</th><th>What to do</th></tr></thead>
+          <tbody>
+            <tr><td><span class="sbadge s200">200</span></td><td style="color:var(--sub)">License valid</td><td style="color:var(--sub)">Allow access. Store expiry locally for offline grace period.</td></tr>
+            <tr><td><span class="sbadge s401">401</span></td><td style="color:var(--sub)">Bad token / secret</td><td style="color:var(--sub)">Developer config error — check your embedded token.</td></tr>
+            <tr><td><span class="sbadge s403">403</span></td><td style="color:var(--sub)">Expired or HWID mismatch</td><td style="color:var(--sub)">Block access. Show specific message from response body.</td></tr>
+            <tr><td><span class="sbadge s404">404</span></td><td style="color:var(--sub)">License not found</td><td style="color:var(--sub)">Prompt user to re-enter or contact support.</td></tr>
+            <tr><td><span class="sbadge s426">426</span></td><td style="color:var(--sub)">Outdated version</td><td style="color:var(--sub)">Auto-open browser to <code>link</code> field in the response.</td></tr>
+            <tr><td><span class="sbadge s429">429</span></td><td style="color:var(--sub)">Rate limited</td><td style="color:var(--sub)">Retry after 60 seconds.</td></tr>
+          </tbody>
+        </table>
+      </div></div>
+    </section>
+
+    <!-- ── GITHUB GUIDE ── -->
+    <section class="doc-section" id="github-guide">
+      <div class="section-title">GitHub <span>Merge Guide</span></div>
+      <div class="section-sub">How to push the v2.0 improvements into your existing repo</div>
+
+      <div class="callout callout-note" style="margin-bottom:20px"><span class="callout-icon">💡</span>Your existing repo is <code>maybeninja/Authentication-System</code>. These steps merge the improved files into it safely without losing history.</div>
+
+      <div class="git-step">
+        <div class="git-step-head">
+          <div class="git-num">1</div>
+          <div><h4>Clone your repo locally</h4><p>If you don't have it already</p></div>
+        </div>
+        <div class="code-wrap"><div class="code-topbar"><span class="code-lang">bash</span><button class="copy-btn" onclick="copy(this,'git clone https://github.com/maybeninja/Authentication-System.git\ncd Authentication-System')">copy</button></div>
+        <pre>git clone https://github.com/maybeninja/Authentication-System.git
+cd Authentication-System</pre></div>
+      </div>
+
+      <div class="git-step">
+        <div class="git-step-head">
+          <div class="git-num">2</div>
+          <div><h4>Create a new branch for the update</h4><p>Never push directly to main</p></div>
+        </div>
+        <div class="code-wrap"><div class="code-topbar"><span class="code-lang">bash</span><button class="copy-btn" onclick="copy(this,'git checkout -b v2-improvements')">copy</button></div>
+        <pre>git checkout -b v2-improvements</pre></div>
+      </div>
+
+      <div class="git-step">
+        <div class="git-step-head">
+          <div class="git-num">3</div>
+          <div><h4>Copy in the new files</h4><p>Replace server.py, bot.py, panel.py — add frontend/ and requirements.txt</p></div>
+        </div>
+        <div class="code-wrap"><div class="code-topbar"><span class="code-lang">bash</span><button class="copy-btn" onclick="copy(this,'# Copy the improved files into your repo folder:\n# server.py   → replace existing\n# bot.py      → replace existing\n# panel.py    → replace existing\n# requirements.txt → replace/create\n# frontend/dashboard.html → new folder\n\nmkdir -p frontend')">copy</button></div>
+        <pre><span class="cm"># Copy the improved files into your repo folder:</span>
+<span class="cm"># server.py          → replace existing</span>
+<span class="cm"># bot.py             → replace existing</span>
+<span class="cm"># panel.py           → replace existing</span>
+<span class="cm"># requirements.txt   → replace or create</span>
+<span class="cm"># frontend/dashboard.html → new folder + file</span>
+
+mkdir -p frontend</pre></div>
+      </div>
+
+      <div class="git-step">
+        <div class="git-step-head">
+          <div class="git-num">4</div>
+          <div><h4>Add a .gitignore</h4><p>Protect config.yaml and Database/ from being committed</p></div>
+        </div>
+        <div class="code-wrap"><div class="code-topbar"><span class="code-lang">bash</span><button class="copy-btn" onclick="copy(this,'cat > .gitignore << EOF\nconfig.yaml\nDatabase/\n__pycache__/\n*.pyc\n*.log\n.env\nEOF')">copy</button></div>
+        <pre>cat > .gitignore <span class="punc"><<</span> EOF
+config.yaml
+Database/
+__pycache__/
+*.pyc
+*.log
+.env
+EOF</pre></div>
+        <div class="callout callout-danger" style="margin-top:8px"><span class="callout-icon">🚫</span>Your <code>config.yaml</code> contains your auth token and Discord bot token. Never commit it. The current repo already has it exposed — consider rotating those tokens.</div>
+      </div>
+
+      <div class="git-step">
+        <div class="git-step-head">
+          <div class="git-num">5</div>
+          <div><h4>Stage and commit everything</h4></div>
+        </div>
+        <div class="code-wrap"><div class="code-topbar"><span class="code-lang">bash</span><button class="copy-btn" onclick="copy(this,'git add server.py bot.py panel.py requirements.txt frontend/ .gitignore\ngit commit -m \"feat: v2.0 improvements — security, rate limiting, frontend dashboard\"\n\n# Quick summary of what changed:\n# - Cryptographic key generation (secrets module)\n# - Rate limiting per IP per endpoint\n# - Atomic file writes (no data corruption on crash)\n# - Input sanitization (path traversal protection)\n# - Constant-time token comparison\n# - /cleanup endpoint for expired licenses\n# - /health endpoint\n# - New frontend dashboard (admin + user portal)\n# - Improved Discord bot (error handler, persistent views)')">copy</button></div>
+        <pre>git add server.py bot.py panel.py requirements.txt frontend/ .gitignore
+git commit -m <span class="str">"feat: v2.0 — security, rate limiting, frontend dashboard"</span>
+
+<span class="cm"># What this commit includes:</span>
+<span class="cm"># ✓ Cryptographic key generation (secrets module)</span>
+<span class="cm"># ✓ Per-IP rate limiting on all endpoints</span>
+<span class="cm"># ✓ Atomic file writes — no corruption on crash</span>
+<span class="cm"># ✓ Input sanitization — path traversal protection</span>
+<span class="cm"># ✓ Constant-time token comparison</span>
+<span class="cm"># ✓ /cleanup and /health endpoints</span>
+<span class="cm"># ✓ Frontend dashboard (admin + user portal)</span>
+<span class="cm"># ✓ Improved Discord bot with error handler</span></pre></div>
+      </div>
+
+      <div class="git-step">
+        <div class="git-step-head">
+          <div class="git-num">6</div>
+          <div><h4>Push the branch to GitHub</h4></div>
+        </div>
+        <div class="code-wrap"><div class="code-topbar"><span class="code-lang">bash</span><button class="copy-btn" onclick="copy(this,'git push origin v2-improvements')">copy</button></div>
+        <pre>git push origin v2-improvements</pre></div>
+      </div>
+
+      <div class="git-step">
+        <div class="git-step-head">
+          <div class="git-num">7</div>
+          <div><h4>Merge into main</h4><p>Two options — pick one</p></div>
+        </div>
+        <div style="margin-bottom:10px"><div class="ep-label" style="margin-bottom:6px">Option A — Via GitHub UI (recommended)</div>
+        <div class="code-wrap"><div class="code-topbar"><span class="code-lang">steps</span></div>
+        <pre><span class="num">1.</span> Go to github.com/maybeninja/Authentication-System
+<span class="num">2.</span> Click <span class="str">"Compare & pull request"</span> on the v2-improvements branch
+<span class="num">3.</span> Add a title and description
+<span class="num">4.</span> Click <span class="str">"Merge pull request"</span></pre></div></div>
+        <div><div class="ep-label" style="margin-bottom:6px">Option B — Via command line</div>
+        <div class="code-wrap"><div class="code-topbar"><span class="code-lang">bash</span><button class="copy-btn" onclick="copy(this,'git checkout main\ngit merge v2-improvements\ngit push origin main')">copy</button></div>
+        <pre>git checkout main
+git merge v2-improvements
+git push origin main</pre></div></div>
+      </div>
+
+      <div class="git-step">
+        <div class="git-step-head">
+          <div class="git-num">8</div>
+          <div><h4>Tag the release</h4><p>Optional but good practice</p></div>
+        </div>
+        <div class="code-wrap"><div class="code-topbar"><span class="code-lang">bash</span><button class="copy-btn" onclick="copy(this,'git tag -a v2.0 -m \"v2.0 — Security improvements + frontend dashboard\"\ngit push origin v2.0')">copy</button></div>
+        <pre>git tag -a v2.0 -m <span class="str">"v2.0 — Security improvements + frontend dashboard"</span>
+git push origin v2.0</pre></div>
+      </div>
+
+      <div class="callout callout-warn" style="margin-top:8px"><span class="callout-icon">⚠️</span><div><strong>Before you push:</strong> your current repo has <code>config.yaml</code> committed with real tokens in it. Go to your Discord Developer Portal and regenerate your bot token, and update <code>authtoken</code> in config.yaml to a new value. Then add .gitignore first so config.yaml never gets pushed again.</div></div>
+    </section>
+
+  </div>
+
+  <footer>
+    <span>Auth System API Docs — v2.0</span>
+    <span>Built with Flask · Python · Discord.py</span>
+  </footer>
+</main>
+
+<script>
+// Toggle endpoints
+function toggleEp(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+// Copy buttons
+function copy(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// Active nav on scroll
+const sections = document.querySelectorAll('.doc-section,[id^="ep-"],[id^="end-"]');
+const navLinks = document.querySelectorAll('.nav-link');
+window.addEventListener('scroll', () => {
+  let cur = '';
+  document.querySelectorAll('[id]').forEach(s => {
+    if (window.scrollY >= s.offsetTop - 80) cur = s.id;
+  });
+  navLinks.forEach(l => {
+    l.classList.toggle('active', l.getAttribute('href') === '#' + cur);
+  });
+}, { passive: true });
+
+// Search nav
+function searchNav(q) {
+  navLinks.forEach(l => {
+    l.style.display = q === '' || l.textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
+  });
+}
+
+// Update try-it URL preview
+document.getElementById('ti-base')?.addEventListener('input', e => {
+  document.getElementById('health-url').textContent = `GET ${e.target.value}/Auth/health`;
+});
+
+// Try health
+async function tryHealth() {
+  const base = document.getElementById('ti-base').value.trim().replace(/\/$/,'');
+  const res = document.getElementById('health-res');
+  res.className = 'try-response show';
+  res.innerHTML = '<div style="color:var(--muted);font-family:var(--mono);font-size:12px">Sending request…</div>';
+  try {
+    const r = await fetch(`${base}/Auth/health`);
+    const data = await r.json();
+    const color = r.ok ? 'var(--accent2)' : 'var(--danger)';
+    res.innerHTML = `
+      <div class="try-res-head">
+        <span class="try-status" style="background:rgba(52,211,153,.1);color:${color};border:1px solid ${color}40">${r.status} ${r.ok?'OK':'Error'}</span>
+      </div>
+      <div class="code-wrap"><div class="code-topbar"><span class="code-lang">response</span></div><pre>${JSON.stringify(data,null,2)}</pre></div>`;
+  } catch(e) {
+    res.innerHTML = `<div style="color:var(--danger);font-family:var(--mono);font-size:12px">❌ ${e.message} — is the server running?</div>`;
+  }
+}
+
+// Open first few endpoints by default
+['end-health'].forEach(id => document.getElementById(id)?.classList.add('open'));
+</script>
+</body>
+</html>
